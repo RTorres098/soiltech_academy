@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoilTech Academy · Capacitaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#225235;--green-deep:#18403e;--green-darker:#0e2a28;--green-soft:#2f6b47;
+    --brown:#472307;--brown-soft:#6b3a12;--gold:#a9842f;--gold-bright:#c9a24b;
+    --accent:#34A678;--accent-bright:#4DC491;--ink:#1a1410;--muted:#6b6258;
+    --line:rgba(34,82,53,.14);--paper:#fff;--soft:#f4f0e8;--soft2:#ece6d8;
+    --red:#b3472f;--amber:#a9842f;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Outfit',sans-serif;background:#fff;color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4,.display{font-family:'Fraunces',serif;color:var(--green-deep)}
+  .bg-atmos{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(900px 600px at 88% -12%, rgba(52,166,120,.08), transparent 60%),
+               radial-gradient(700px 500px at 0% 110%, rgba(34,82,53,.06), transparent 55%),#fff}
+  .wrap{position:relative;z-index:1}
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .login-card{width:100%;max-width:430px;background:#fff;border:1px solid var(--line);border-radius:20px;
+    padding:46px 38px;box-shadow:0 24px 60px rgba(34,82,53,.12);animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+  .brand{display:flex;align-items:center;gap:13px;margin-bottom:30px}
+  .brand .mark{width:48px;height:48px;border-radius:13px;flex:none;
+    background:linear-gradient(135deg,var(--green),var(--green-deep) 60%,var(--green-darker));
+    display:grid;place-items:center;font-family:'Fraunces';font-weight:900;color:#fff;font-size:24px;box-shadow:0 8px 20px rgba(34,82,53,.28)}
+  .brand b{font-family:'Fraunces';font-weight:900;font-size:21px;letter-spacing:.3px;color:var(--green-deep)}
+  .brand span{display:block;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-top:2px}
+  .login-card h1{font-size:27px;line-height:1.15;margin-bottom:6px;font-weight:600}
+  .login-card .sub{color:var(--muted);font-size:14px;margin-bottom:28px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
+  .field input{width:100%;padding:13px 15px;border-radius:11px;font-size:15px;font-family:inherit;background:#fff;border:1px solid var(--line);color:var(--ink);transition:.2s}
+  .field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,166,120,.14)}
+  .btn{width:100%;padding:14px;border:none;border-radius:11px;font-family:'Outfit';font-weight:600;font-size:15px;cursor:pointer;transition:.2s;letter-spacing:.3px;background:var(--green);color:#fff}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(34,82,53,.28)}
+  .login-foot{text-align:center;margin-top:20px;font-size:13px;color:var(--muted)}
+  .toggle{display:flex;gap:8px;margin-bottom:24px;background:var(--soft);padding:5px;border-radius:11px}
+  .toggle button{flex:1;padding:9px;border:none;background:transparent;color:var(--muted);border-radius:8px;cursor:pointer;font-family:inherit;font-weight:500;font-size:14px;transition:.2s}
+  .toggle button.on{background:var(--green);color:#fff}
+  #app{display:none}
+  .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px 30px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .topbar .brand{margin-bottom:0;cursor:pointer}.topbar .brand b{font-size:18px}.topbar .brand .mark{width:40px;height:40px;font-size:21px}
+  .topbar-right{display:flex;align-items:center;gap:14px}
+  .role-switch{display:flex;gap:3px;background:var(--soft);padding:4px;border-radius:10px}
+  .role-switch button{border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:7px;cursor:pointer;transition:.2s}
+  .role-switch button.on{background:var(--green);color:#fff}
+  @media(max-width:680px){.role-switch button{padding:6px 9px;font-size:11.5px}.user-chip .meta{display:none}}
+  .user-chip{display:flex;align-items:center;gap:11px}
+  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--green-soft),var(--green-deep));display:grid;place-items:center;font-weight:700;color:#fff;font-size:15px;border:1.5px solid var(--accent)}
+  .user-chip .meta{text-align:right;line-height:1.2}.user-chip .meta b{font-size:14px;font-weight:600}.user-chip .meta span{font-size:11.5px;color:var(--muted)}
+  .logout{background:none;border:1px solid var(--line);color:var(--green);padding:8px 14px;border-radius:9px;cursor:pointer;font-family:inherit;font-size:13px;transition:.2s;margin-left:6px}
+  .logout:hover{background:var(--soft)}
+  .container{max-width:1160px;margin:0 auto;padding:42px 30px 90px}
+  .page-head{margin-bottom:34px;animation:rise .6s both}
+  .page-head .eyebrow{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
+  .page-head h1{font-size:38px;font-weight:900;line-height:1.05}
+  .page-head p{color:var(--muted);font-size:15px;margin-top:9px;max-width:620px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px}
+  .course-card{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer;transition:.28s cubic-bezier(.2,.8,.2,1);position:relative;box-shadow:0 4px 16px rgba(34,82,53,.05);animation:rise .6s both}
+  .course-card:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:0 22px 50px rgba(34,82,53,.16)}
+  .course-thumb{height:148px;position:relative;display:grid;place-items:center;overflow:hidden}
+  .course-thumb .glyph{font-family:'Fraunces';font-weight:900;font-size:54px;color:rgba(255,255,255,.96);text-shadow:0 4px 18px rgba(0,0,0,.25);z-index:1}
+  .course-thumb::after{content:"";position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0 20h40M20 0v40' stroke='rgba(255,255,255,.07)' stroke-width='1'/%3E%3C/svg%3E");opacity:.7}
+  .lvl{position:absolute;top:12px;left:12px;z-index:2;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:5px 11px;border-radius:30px;backdrop-filter:blur(4px);background:rgba(14,42,40,.5);border:1px solid rgba(255,255,255,.2);color:#fff}
+  .badge-mod{position:absolute;top:12px;right:12px;z-index:2;font-size:11px;font-weight:600;padding:5px 11px;border-radius:30px;background:rgba(255,255,255,.92);color:var(--green-deep)}
+  .course-body{padding:20px}
+  .course-body .cat{font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
+  .course-body h3{font-size:20px;font-weight:600;line-height:1.22;margin-bottom:8px}
+  .course-body .desc{font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:16px;min-height:60px}
+  .course-meta{display:flex;align-items:center;gap:14px;font-size:12.5px;color:var(--muted);margin-bottom:14px;flex-wrap:wrap}
+  .course-meta span{display:flex;align-items:center;gap:5px}
+  .progress{height:7px;background:var(--soft);border-radius:30px;overflow:hidden}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-bright));border-radius:30px;transition:width .8s}
+  .progress-label{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:6px}
+  #detail{display:none}
+  .back{background:none;border:none;color:var(--green);cursor:pointer;font-family:inherit;font-size:14px;display:flex;align-items:center;gap:7px;margin-bottom:22px;transition:.2s}
+  .back:hover{gap:11px}
+  .detail-hero{border-radius:18px;overflow:hidden;margin-bottom:28px;position:relative;color:#fff;padding:38px 34px;box-shadow:0 14px 40px rgba(34,82,53,.18)}
+  .detail-hero::after{content:"";position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M0 22h44M22 0v44' stroke='rgba(255,255,255,.06)' stroke-width='1'/%3E%3C/svg%3E")}
+  .detail-hero>*{position:relative;z-index:1}
+  .detail-hero .cat{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-bright);margin-bottom:10px}
+  .detail-hero h1{color:#fff;font-size:34px;font-weight:900;line-height:1.08;margin-bottom:12px;max-width:760px}
+  .detail-hero p{font-size:15px;line-height:1.6;color:rgba(255,255,255,.85);max-width:680px;margin-bottom:20px}
+  .hero-stats{display:flex;gap:26px;flex-wrap:wrap}
+  .hero-stats .st b{display:block;font-family:'Fraunces';font-size:22px;color:#fff}
+  .hero-stats .st span{font-size:12px;color:rgba(255,255,255,.7);letter-spacing:.5px}
+  .hero-prog{margin-top:22px;max-width:460px}
+  .hero-prog .bar{height:8px;background:rgba(255,255,255,.2);border-radius:30px;overflow:hidden}
+  .hero-prog .bar i{display:block;height:100%;background:var(--accent-bright);border-radius:30px;transition:width .8s}
+  .hero-prog .lab{font-size:12.5px;color:rgba(255,255,255,.8);margin-top:7px}
+  .detail-layout{display:grid;grid-template-columns:1fr 320px;gap:30px;align-items:start}
+  @media(max-width:900px){.detail-layout{grid-template-columns:1fr}}
+  .section-title{font-family:'Fraunces';font-size:21px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:9px}
+  .section-sub{color:var(--muted);font-size:13.5px;margin-bottom:20px}
+  /* MODULE accordion */
+  .acc{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:14px;background:#fff;box-shadow:0 3px 12px rgba(34,82,53,.04);transition:.2s}
+  .acc.open{border-color:var(--accent);box-shadow:0 10px 30px rgba(34,82,53,.1)}
+  .acc-head{padding:18px 20px;cursor:pointer;display:flex;align-items:center;gap:15px;transition:.2s}
+  .acc-head:hover{background:var(--soft)}
+  .acc-num{width:38px;height:38px;border-radius:10px;flex:none;display:grid;place-items:center;font-weight:700;font-family:'Fraunces';font-size:16px;background:var(--soft);color:var(--green);transition:.2s}
+  .acc.open .acc-num{background:var(--green);color:#fff}.acc.done .acc-num{background:var(--accent);color:#fff}
+  .acc-info{flex:1;min-width:0}
+  .acc-info b{display:block;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.3}
+  .acc-info span{font-size:12.5px;color:var(--muted)}
+  .acc-meta{display:flex;align-items:center;gap:10px;flex:none}
+  .acc-tag{font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:4px 9px;border-radius:20px;white-space:nowrap}
+  .tag-teoria{background:rgba(52,166,120,.14);color:var(--green)}
+  .tag-practica{background:rgba(169,132,47,.16);color:var(--brown-soft)}
+  .chev{transition:.3s;color:var(--muted);font-size:18px}
+  .acc.open .chev{transform:rotate(180deg);color:var(--accent)}
+  .acc-body{max-height:0;overflow:hidden;transition:max-height .45s ease}
+  .acc-body-inner{padding:4px 20px 22px 20px}
+  @media(max-width:560px){.acc-meta .acc-tag{display:none}}
+  .obj{background:var(--soft);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:11px 15px;font-size:13.5px;color:#4a443c;margin-bottom:18px}
+  .obj b{color:var(--green)}
+  .block-label{font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);margin:0 0 12px;font-weight:600;display:flex;align-items:center;gap:7px}
+  /* TEMA (subtopic) cards with video */
+  .tema{border:1px solid var(--line);border-radius:11px;margin-bottom:10px;overflow:hidden;background:#fff;transition:.2s}
+  .tema.open{border-color:var(--accent)}
+  .tema-head{padding:13px 15px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:.2s}
+  .tema-head:hover{background:var(--soft)}
+  .tema-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:12px;color:var(--muted);transition:.2s}
+  .tema.seen .tema-dot{background:var(--accent);border-color:var(--accent);color:#fff}
+  .tema-head .tt{flex:1;font-size:14px;font-weight:500;color:var(--ink);line-height:1.35}
+  .tema-head .pico{font-size:12px;color:var(--accent);font-weight:600;white-space:nowrap}
+  .tema-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+  .tema-body-inner{padding:2px 15px 16px 53px}
+  @media(max-width:560px){.tema-body-inner{padding:2px 14px 16px 14px}}
+  .vbox{aspect-ratio:16/9;border-radius:10px;border:2px dashed var(--line);background:var(--soft);display:grid;place-items:center;text-align:center;padding:16px;margin-bottom:12px}
+  .vbox .ico{font-size:34px;margin-bottom:7px;color:var(--green);opacity:.42}
+  .vbox b{font-family:'Fraunces';font-size:15px;color:var(--green-deep);display:block;margin-bottom:3px}
+  .vbox span{font-size:12px;color:var(--muted)}
+  .seen-btn{padding:8px 14px;border:1px solid var(--line);background:#fff;color:var(--green);border-radius:8px;font-family:inherit;font-weight:600;font-size:12.5px;cursor:pointer;transition:.2s}
+  .seen-btn:hover{background:var(--soft)}
+  .seen-btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  /* materials */
+  .mats{margin:22px 0 0}
+  .mat-item{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:10px;background:var(--soft);margin-bottom:8px;transition:.2s}
+  .mat-item:hover{background:var(--soft2)}
+  .mat-item .left{display:flex;align-items:center;gap:11px;min-width:0}
+  .mat-item .fileico{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-size:15px;background:linear-gradient(135deg,var(--green-soft),var(--green-deep));flex:none}
+  .mat-item .name{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mat-item .sz{font-size:11px;color:var(--muted)}
+  .dl{background:var(--green);color:#fff;border:none;padding:7px 13px;border-radius:8px;font-family:inherit;font-weight:600;font-size:12.5px;cursor:pointer;transition:.2s;flex:none}
+  .dl:hover{background:var(--green-soft)}
+  /* task & quiz panels */
+  .panel{border:1px solid var(--line);border-radius:12px;padding:18px;margin-top:22px;background:#fff}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .panel-head h4{font-size:15px;display:flex;align-items:center;gap:8px}
+  .panel p{font-size:13.5px;color:#4a443c;line-height:1.55;margin-bottom:14px}
+  .pill{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:5px 11px;border-radius:20px;white-space:nowrap}
+  .pill-pend{background:var(--soft2);color:var(--muted)}
+  .pill-rev{background:rgba(169,132,47,.16);color:var(--brown-soft)}
+  .pill-ok{background:rgba(52,166,120,.16);color:var(--green)}
+  .pill-no{background:rgba(179,71,47,.14);color:var(--red)}
+  .act-btn{padding:10px 16px;border:none;border-radius:9px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;transition:.2s;background:var(--green);color:#fff}
+  .act-btn:hover{filter:brightness(1.08)}
+  .act-btn.ghost{background:transparent;border:1px solid var(--line);color:var(--green)}
+  .act-btn.ghost:hover{background:var(--soft)}
+  .act-btn:disabled{opacity:.5;cursor:not-allowed}
+  .evaluator{margin-top:12px;padding:11px 13px;border:1px dashed var(--gold);border-radius:9px;background:rgba(169,132,47,.05);font-size:12.5px;color:var(--brown-soft)}
+  .evaluator b{color:var(--brown)}
+  /* quiz */
+  .q{margin-bottom:16px}
+  .q .qt{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:9px;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:10px;padding:10px 13px;border:1px solid var(--line);border-radius:9px;margin-bottom:7px;cursor:pointer;font-size:13.5px;transition:.18s;background:#fff}
+  .opt:hover{border-color:var(--accent);background:var(--soft)}
+  .opt.sel{border-color:var(--green);background:rgba(52,166,120,.08)}
+  .opt.correct{border-color:var(--accent);background:rgba(52,166,120,.14)}
+  .opt.wrong{border-color:var(--red);background:rgba(179,71,47,.1)}
+  .opt .mk{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:none}
+  .opt.sel .mk{border-color:var(--green);background:var(--green);box-shadow:inset 0 0 0 3px #fff}
+  .quiz-result{padding:13px 15px;border-radius:10px;font-size:14px;font-weight:600;margin-top:6px}
+  .quiz-result.ok{background:rgba(52,166,120,.14);color:var(--green)}
+  .quiz-result.no{background:rgba(179,71,47,.12);color:var(--red)}
+  .mod-status{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .mini-pill{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:14px;letter-spacing:.3px}
+  /* sidebar */
+  .side{position:sticky;top:88px;display:flex;flex-direction:column;gap:18px}
+  @media(max-width:900px){.side{position:static}}
+  .side-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 4px 16px rgba(34,82,53,.05)}
+  .side-card h4{font-size:16px;font-weight:600;margin-bottom:14px}
+  .info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(34,82,53,.07);font-size:13.5px}
+  .info-row:last-child{border-bottom:none}
+  .info-row .k{color:var(--muted)}.info-row .v{font-weight:600;color:var(--ink);text-align:right}
+  .incl{list-style:none}
+  .incl li{font-size:13.5px;color:#3c362e;padding:7px 0 7px 24px;position:relative;line-height:1.4}
+  .incl li::before{content:"✓";position:absolute;left:0;top:6px;color:var(--accent);font-weight:700}
+  /* certification card */
+  .cert-card{border:none;background:linear-gradient(135deg,var(--green),var(--green-deep));color:#fff;text-align:center}
+  .cert-card h4{color:#fff;font-size:18px;margin-bottom:6px}
+  .cert-card .seal{width:62px;height:62px;border-radius:50%;margin:4px auto 14px;display:grid;place-items:center;font-size:30px;background:rgba(255,255,255,.12);border:2px solid var(--accent-bright)}
+  .cert-card p{font-size:12.5px;color:rgba(255,255,255,.82);line-height:1.5;margin-bottom:16px}
+  .cert-checklist{text-align:left;list-style:none;margin-bottom:18px}
+  .cert-checklist li{font-size:12.5px;padding:6px 0 6px 26px;position:relative;color:rgba(255,255,255,.9)}
+  .cert-checklist li::before{content:"○";position:absolute;left:4px;top:5px;color:rgba(255,255,255,.5)}
+  .cert-checklist li.met::before{content:"●";color:var(--accent-bright)}
+  .cert-btn{width:100%;padding:14px;border:none;border-radius:11px;font-family:inherit;font-weight:700;font-size:14.5px;cursor:pointer;transition:.2s;background:var(--accent-bright);color:var(--green-darker)}
+  .cert-btn:disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.5);cursor:not-allowed}
+  .cert-btn:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.25)}
+  /* QUIZ PAGE */
+  .quiz-shell{max-width:760px;margin:0 auto}
+  .quiz-hero{border-radius:16px;padding:30px 32px;color:#fff;margin-bottom:22px;box-shadow:0 12px 34px rgba(34,82,53,.18)}
+  .quiz-hero .qh-eyebrow{font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--accent-bright);margin-bottom:8px}
+  .quiz-hero h1{color:#fff;font-size:26px;line-height:1.15;font-weight:900}
+  .quiz-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:30px;box-shadow:0 4px 16px rgba(34,82,53,.05)}
+  .quiz-feats{list-style:none;margin:0 0 22px}
+  .quiz-feats li{display:flex;gap:14px;align-items:flex-start;padding:13px 0;border-bottom:1px solid rgba(34,82,53,.07)}
+  .quiz-feats li:last-child{border-bottom:none}
+  .quiz-feats li span{font-size:22px;flex:none;width:30px;text-align:center}
+  .quiz-feats li b{font-size:14.5px;color:var(--green-deep)}
+  .quiz-feats li p{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .quiz-prev{background:var(--soft);border-radius:10px;padding:12px 15px;font-size:13.5px;color:#4a443c;margin-bottom:20px}
+  .result-big{text-align:center;padding:30px;border-radius:14px}
+  .result-big.ok{background:rgba(52,166,120,.12)}
+  .result-big.no{background:rgba(179,71,47,.1)}
+  .result-big .rb-score{font-family:'Fraunces';font-size:52px;font-weight:900}
+  .result-big.ok .rb-score{color:var(--green)}
+  .result-big.no .rb-score{color:var(--red)}
+  .result-big .rb-msg{font-size:15px;font-weight:600;margin-top:6px;color:var(--ink)}
+  /* INSTRUCTOR / ADMIN / PROFILE panels */
+  .tabs{display:flex;gap:8px;margin-bottom:26px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .tabs button{border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;padding:11px 4px;margin-right:14px;cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+  .tabs button.on{color:var(--green);border-bottom-color:var(--accent)}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px}
+  .stat-box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 4px 16px rgba(34,82,53,.05)}
+  .stat-box b{font-family:'Fraunces';font-size:30px;color:var(--green-deep);display:block;line-height:1}
+  .stat-box span{font-size:12.5px;color:var(--muted);letter-spacing:.3px}
+  .data-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden;box-shadow:0 4px 16px rgba(34,82,53,.05);margin-bottom:18px}
+  .data-row{display:flex;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--line);transition:.2s;flex-wrap:wrap}
+  .data-row:last-child{border-bottom:none}
+  .data-row:hover{background:var(--soft)}
+  .data-row .dr-main{flex:1;min-width:0}
+  .data-row .dr-main b{font-size:14.5px;font-weight:600;color:var(--ink);display:block}
+  .data-row .dr-main span{font-size:12.5px;color:var(--muted)}
+  .data-row .dr-sub{font-size:13px;color:#4a443c}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .tbl-head{padding:14px 20px;background:var(--soft);font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:600}
+  .empty{text-align:center;padding:46px 20px;color:var(--muted)}
+  .empty .ico{font-size:42px;opacity:.4;margin-bottom:12px}
+  .review-box{margin-top:12px;padding:14px;border:1px dashed var(--line);border-radius:10px;background:var(--soft)}
+  .review-box textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:13.5px;resize:vertical;min-height:64px;margin-bottom:10px;background:#fff}
+  .review-box textarea:focus{outline:none;border-color:var(--accent)}
+  /* profile */
+  .profile-grid{display:grid;grid-template-columns:280px 1fr;gap:30px;align-items:start}
+  @media(max-width:780px){.profile-grid{grid-template-columns:1fr}}
+  .profile-photo{text-align:center}
+  .profile-photo .big-av{width:130px;height:130px;border-radius:50%;margin:0 auto 16px;background:linear-gradient(135deg,var(--green-soft),var(--green-deep));display:grid;place-items:center;font-family:'Fraunces';font-weight:900;font-size:52px;color:#fff;border:3px solid var(--accent)}
+  .form-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;box-shadow:0 4px 16px rgba(34,82,53,.05)}
+  .form-card h4{font-size:16px;margin-bottom:16px}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:560px){.frow{grid-template-columns:1fr}}
+  .fg{margin-bottom:14px}
+  .fg label{display:block;font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+  .fg input,.fg textarea,.fg select{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;background:#fff;color:var(--ink)}
+  .fg input:focus,.fg textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,166,120,.12)}
+  /* instructor cards */
+  .instr-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(34,82,53,.05);transition:.25s;animation:rise .6s both}
+  .instr-card:hover{transform:translateY(-5px);box-shadow:0 18px 44px rgba(34,82,53,.14);border-color:var(--accent)}
+  .instr-top{background:linear-gradient(135deg,var(--green),var(--green-deep));height:74px;position:relative}
+  .instr-av{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--green-soft),var(--green-darker));border:3px solid #fff;display:grid;place-items:center;font-family:'Fraunces';font-weight:900;font-size:34px;color:#fff;position:absolute;left:24px;bottom:-42px}
+  .instr-body{padding:52px 24px 24px}
+  .instr-body h3{font-size:19px;font-weight:600;margin-bottom:3px}
+  .instr-body .role{font-size:12px;color:var(--gold);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;font-weight:600}
+  .instr-body p{font-size:13.5px;color:#4a443c;line-height:1.55;margin-bottom:14px}
+  .instr-tags{display:flex;gap:7px;flex-wrap:wrap}
+  .instr-tags span{font-size:11.5px;background:var(--soft);color:var(--green);padding:5px 11px;border-radius:20px;font-weight:500}
+  .cert-list-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 4px 16px rgba(34,82,53,.05);display:flex;align-items:center;gap:18px;margin-bottom:14px}
+  .cert-medal{width:56px;height:56px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,var(--accent),var(--green))}
+  .cert-list-card .ci{flex:1;min-width:0}
+  .cert-list-card .ci b{font-size:15.5px;display:block}
+  .cert-list-card .ci span{font-size:12.5px;color:var(--muted)}
+  .cert-code{font-family:monospace;font-size:11.5px;background:var(--soft);padding:4px 9px;border-radius:6px;color:var(--green-deep)}
+  .footer{text-align:center;padding:30px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);margin-top:20px}
+  /* modal */
+  .modal-bg{position:fixed;inset:0;z-index:60;background:rgba(14,42,40,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:24px}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:18px;max-width:460px;width:100%;padding:40px 34px;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.3);animation:rise .4s both}
+  .modal .seal{width:84px;height:84px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;font-size:40px;background:linear-gradient(135deg,var(--accent),var(--green));color:#fff}
+  .modal h2{font-size:25px;margin-bottom:8px}
+  .modal p{color:var(--muted);font-size:14px;line-height:1.55;margin-bottom:22px}
+  .modal .cert-name{font-family:'Fraunces';font-size:20px;color:var(--green-deep);font-weight:600;margin:4px 0 18px}
+</style>
+</head>
+<body>
+<div class="bg-atmos"></div>
+<div class="wrap">
+<section id="login">
+  <div class="login-card">
+    <div class="brand"><div class="mark">S</div><div><b>SoilTech</b><span>Academy</span></div></div>
+    <div class="toggle">
+      <button id="tLogin" class="on" onclick="mode('login')">Iniciar sesión</button>
+      <button id="tReg" onclick="mode('reg')">Registrarse</button>
+    </div>
+    <h1 id="formTitle">Bienvenido de vuelta</h1>
+    <p class="sub" id="formSub">Accedé a tus capacitaciones técnicas.</p>
+    <div class="field" id="nameField" style="display:none"><label>Nombre completo</label><input id="inName" type="text" placeholder="Tu nombre"></div>
+    <div class="field"><label>Correo electrónico</label><input id="inEmail" type="email" placeholder="vos@soiltechpy.com"></div>
+    <div class="field"><label>Contraseña</label><input id="inPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')enter()"></div>
+    <button class="btn" onclick="enter()" id="submitBtn">Entrar</button>
+    <p class="login-foot">SoilTech Academy · acceso seguro</p>
+  </div>
+</section>
+<div id="app">
+  <div class="topbar">
+    <div class="brand" onclick="goHome()"><div class="mark">S</div>
+      <div><b>SoilTech</b><span style="font-size:10px;letter-spacing:2.5px;color:var(--gold);text-transform:uppercase">Academy</span></div></div>
+    <div class="topbar-right">
+      <div class="role-switch" title="Vista de demostración">
+        <button id="rl-alumno" class="on" onclick="setRole('alumno')">Alumno</button>
+        <button id="rl-instructor" onclick="setRole('instructor')">Instructor</button>
+        <button id="rl-admin" onclick="setRole('admin')">Admin</button>
+      </div>
+      <div class="user-chip" onclick="openProfile()" style="cursor:pointer">
+        <div class="meta"><b id="uName">Alumno</b><span id="uEmail">demo@soiltech</span></div>
+        <div class="avatar" id="uAvatar">A</div>
+      </div>
+      <button class="logout" onclick="logout()">Salir</button>
+    </div>
+  </div>
+  <!-- ALUMNO: catálogo -->
+  <div id="dashboard" class="container">
+    <div class="page-head">
+      <div class="eyebrow">Mi panel</div>
+      <h1>Mis capacitaciones</h1>
+      <p>Continuá donde lo dejaste. Cada capacitación reúne sus módulos, temas con video, tareas y evaluaciones.</p>
+    </div>
+    <div class="grid" id="courseGrid"></div>
+    <div style="margin-top:46px"><div class="page-head" style="margin-bottom:20px">
+      <div class="eyebrow">Equipo</div><h1 style="font-size:28px">Conocé a tus instructores</h1></div>
+      <div class="grid" id="instrPreview"></div>
+    </div>
+    <div class="footer">SoilTech · Soluciones Agronómicas — Consultoría y Capacitaciones · www.soiltechpy.com</div>
+  </div>
+  <div id="detail" class="container"></div>
+  <div id="quizPage" class="container" style="display:none"></div>
+  <div id="profilePage" class="container" style="display:none"></div>
+  <div id="certsPage" class="container" style="display:none"></div>
+  <div id="instructorsPage" class="container" style="display:none"></div>
+  <!-- INSTRUCTOR -->
+  <div id="instructorPanel" class="container" style="display:none"></div>
+  <!-- ADMIN -->
+  <div id="adminPanel" class="container" style="display:none"></div>
+</div>
+</div>
+<div class="modal-bg" id="certModal">
+  <div class="modal">
+    <div class="seal">🎓</div>
+    <h2>¡Felicitaciones!</h2>
+    <p>Completaste todos los requisitos de la capacitación:</p>
+    <div class="cert-name" id="certCourseName"></div>
+    <p id="certWho"></p>
+    <button class="btn" onclick="closeCert()">Descargar certificado (demo)</button>
+  </div>
+</div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+           signOut, onAuthStateChanged, updateProfile }
+    from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBrDGWcuej0C3ROUDSuVjnYc3Nsz8u4DfI",
+    authDomain: "soiltech-academy.firebaseapp.com",
+    projectId: "soiltech-academy",
+    storageBucket: "soiltech-academy.firebasestorage.app",
+    messagingSenderId: "152682364840",
+    appId: "1:152682364840:web:98603b614e69c1a0e5e79d",
+    measurementId: "G-SPBZ4H18DT"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const errMsg = (code) => ({
+    'auth/invalid-email':'El correo no es válido.',
+    'auth/email-already-in-use':'Ese correo ya está registrado. Iniciá sesión.',
+    'auth/weak-password':'La contraseña debe tener al menos 6 caracteres.',
+    'auth/invalid-credential':'Correo o contraseña incorrectos.',
+    'auth/user-not-found':'No existe una cuenta con ese correo.',
+    'auth/wrong-password':'Contraseña incorrecta.',
+    'auth/missing-password':'Ingresá tu contraseña.',
+    'auth/network-request-failed':'Sin conexión. Revisá tu internet.'
+  }[code] || 'Ocurrió un error. Intentá de nuevo.');
+
+  // --- API expuesta al script principal ---
+  window.fbRegister = async (name, email, pass) => {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    // documento de usuario en Firestore con rol por defecto
+    await setDoc(doc(db, "users", cred.user.uid), {
+      name, email, role: "alumno", createdAt: serverTimestamp()
+    });
+    return cred.user;
+  };
+  window.fbLogin = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
+  window.fbLogout = () => signOut(auth);
+  window.fbErr = errMsg;
+
+  // obtener el rol guardado (alumno | instructor | admin)
+  window.fbGetRole = async (uid) => {
+    try {
+      const snap = await getDoc(doc(db, "users", uid));
+      return snap.exists() ? (snap.data().role || "alumno") : "alumno";
+    } catch(e){ return "alumno"; }
+  };
+
+  // escucha de sesión: corre al cargar y en cada login/logout
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const role = await window.fbGetRole(user.uid);
+      window.onAuthIn && window.onAuthIn({
+        name: user.displayName || (user.email||'').split('@')[0],
+        email: user.email, uid: user.uid, role
+      });
+    } else {
+      window.onAuthOut && window.onAuthOut();
+    }
+  });
+</script>
+<script>
+/* ============================================================
+   SoilTech Academy — datos y lógica
+   Jerarquía: CAPACITACIÓN › MÓDULO › TEMA
+   - cada TEMA tiene video
+   - materiales por MÓDULO
+   - cada MÓDULO tiene tarea + cuestionario
+   - certificación: todos los módulos completos (temas vistos),
+     todos los cuestionarios >=60%, todas las tareas aprobadas
+   ============================================================ */
+
+const COURSES = [
+  {
+    id:"arcgis", cat:"SIG · ArcGIS Pro & Online", title:"Capacitación en SIG — ArcGIS Pro & Online",
+    glyph:"◆", color:"linear-gradient(135deg,#225235,#0e2a28)",
+    desc:"Especialización práctica en gestión territorial y visualización avanzada para el sector agroforestal. 25 horas certificadas.",
+    hours:"25 h",
+    incluye:["Licencia Advanced 3 meses","Certificación de 25 horas","Datasets de práctica","Soporte del instructor"],
+    modules:[
+      { t:"Fundamentos de los SIG y Ecosistema ESRI", tipo:"teoria",
+        obj:"Comprender la arquitectura de ArcGIS y preparar el entorno de trabajo híbrido (Desktop–Cloud).",
+        temas:[
+          "Introducción a la ciencia de los datos geográficos: geodesia y coordenadas",
+          "Interfaz de ArcGIS Pro: cintas, paneles, catálogo y proyectos (.aprx)",
+          "Conectividad con ArcGIS Online: licenciamiento y \"Organización\"",
+          "Datos Online: Biblioteca Esri y conexiones STAC" ],
+        mats:[{n:"Guía de instalación ArcGIS Pro.pdf",s:"1.4 MB",i:"📕"},{n:"Atajos de teclado ArcGIS.pdf",s:"320 KB",i:"📄"}],
+        tarea:"Instalar ArcGIS Pro, iniciar sesión con la cuenta de organización y crear un proyecto .aprx con una conexión a la Biblioteca Esri. Subir captura del proyecto abierto.",
+        quiz:[
+          {q:"¿Qué extensión tiene un proyecto de ArcGIS Pro?", o:[".mxd",".aprx",".qgz",".shp"], a:1},
+          {q:"ArcGIS Online corresponde al componente…", o:["Escritorio","Nube","Servidor local","Base de datos"], a:1},
+          {q:"Una conexión STAC permite acceder a…", o:["Catálogos de imágenes satelitales","Hojas de cálculo","Impresoras","Macros"], a:0} ]
+      },
+      { t:"Gestión y Edición de Datos Geográficos", tipo:"practica",
+        obj:"Crear y administrar bases de datos espaciales con integridad de datos.",
+        temas:[
+          "Geodatabase: creación, reglas de atributos, dominios y subtipos",
+          "Creación de datos vectoriales: puntos, líneas y polígonos",
+          "Edición avanzada: digitalización y topología de geodatabase",
+          "Importar y exportar: Excel, KML y Shapefiles" ],
+        mats:[{n:"Datos_practica.gdb.zip",s:"4.2 MB",i:"🗺️"},{n:"Guía edición vectorial.pdf",s:"1.1 MB",i:"📕"}],
+        tarea:"Crear una geodatabase con un dominio de valores y digitalizar al menos 10 parcelas como polígonos con topología validada. Exportar la capa a Shapefile y entregar el .gdb comprimido.",
+        quiz:[
+          {q:"Un dominio en una geodatabase sirve para…", o:["Acelerar el dibujo","Restringir los valores de un campo","Cambiar la proyección","Crear etiquetas"], a:1},
+          {q:"La topología de geodatabase ayuda a…", o:["Corregir errores de superposición","Aumentar la resolución","Comprimir archivos","Exportar a PDF"], a:0},
+          {q:"¿Cuál NO es un tipo de geometría vectorial?", o:["Punto","Línea","Polígono","Píxel"], a:3} ]
+      },
+      { t:"Análisis Espacial y Geoprocesamiento", tipo:"practica",
+        obj:"Resolver problemas territoriales mediante herramientas de análisis vectorial y ráster.",
+        temas:[
+          "Análisis vectorial: proximidad (Buffer) y extracción",
+          "Superposición: Intersect y Union",
+          "ModelBuilder: automatización de flujos sin programar" ],
+        mats:[{n:"Manual_geoprocesamiento.pdf",s:"2.3 MB",i:"📕"}],
+        tarea:"Construir un modelo en ModelBuilder que genere un buffer de 1 km sobre una capa de puntos y lo intersecte con los distritos. Entregar el modelo y el resultado.",
+        quiz:[
+          {q:"La herramienta Buffer genera…", o:["Una zona de influencia","Una tabla dinámica","Un histograma","Una etiqueta"], a:0},
+          {q:"ModelBuilder permite…", o:["Editar fotos","Automatizar geoprocesos visualmente","Crear cuentas","Instalar plugins"], a:1},
+          {q:"Intersect combina dos capas devolviendo…", o:["La parte común","Todo el área","Solo la primera capa","Nada"], a:0} ]
+      },
+      { t:"Visualización Cartográfica y Simbología", tipo:"practica",
+        obj:"Comunicar información compleja a través de mapas estéticos y técnicamente correctos.",
+        temas:[
+          "Simbologías: tipos y clasificación por valores únicos",
+          "Etiquetado dinámico con expresiones Arcade",
+          "Estilos: crear y administrar STYLX",
+          "Diseño de Layouts: leyendas, textos dinámicos y exportación (.pagx)" ],
+        mats:[{n:"Plantilla_layout.pagx",s:"180 KB",i:"📄"},{n:"Guía simbología y Arcade.pdf",s:"1.3 MB",i:"📕"}],
+        tarea:"Diseñar un layout tamaño A3 con simbología por valores únicos, etiquetas con Arcade, leyenda y escala. Exportar a PDF y entregarlo.",
+        quiz:[
+          {q:"Arcade se usa para…", o:["Expresiones de etiquetado","Comprimir capas","Editar tablas","Crear geodatabases"], a:0},
+          {q:"La extensión .pagx corresponde a…", o:["Un archivo de diseño/layout","Una imagen","Un ráster","Un script"], a:0},
+          {q:"Clasificar por valores únicos asigna un símbolo según…", o:["Cada categoría distinta","El tamaño del archivo","La fecha","El orden alfabético"], a:0} ]
+      },
+      { t:"Del Escritorio al Trabajo en la Nube", tipo:"practica",
+        obj:"Publicar contenido y configurar aplicaciones web interactivas.",
+        temas:[
+          "Publicación de capas: Web Layer y Web Map",
+          "Map Viewer: pop-ups y Smart Mapping",
+          "Actualización de capas online alojadas",
+          "Field Maps: formularios para edición en campo" ],
+        mats:[{n:"Checklist_publicacion_nube.pdf",s:"540 KB",i:"📄"}],
+        tarea:"Publicar una Web Map en ArcGIS Online con pop-ups configurados y un formulario de Field Maps. Compartir el enlace del visor.",
+        quiz:[
+          {q:"Un Web Map se aloja en…", o:["ArcGIS Online","El disco local","Un USB","Excel"], a:0},
+          {q:"Field Maps sirve para…", o:["Editar datos en campo","Imprimir mapas","Crear macros","Hacer backups"], a:0},
+          {q:"Smart Mapping ayuda a…", o:["Sugerir simbología inteligente","Borrar capas","Cifrar datos","Convertir a CAD"], a:0} ]
+      },
+      { t:"Aplicaciones de Campo y Tableros", tipo:"practica",
+        obj:"Desplegar soluciones para la toma de datos en tiempo real y monitoreo.",
+        temas:[
+          "ArcGIS Survey123: formularios e informes PDF automáticos",
+          "ArcGIS Dashboards: tableros y gráficos dinámicos",
+          "Actualización de capas en campo vía app móvil",
+          "ArcGIS StoryMaps: narrativa geoespacial" ],
+        mats:[{n:"Guía Survey123 + Dashboards.pdf",s:"1.8 MB",i:"📕"},{n:"Plantilla_StoryMap.pdf",s:"720 KB",i:"📄"}],
+        tarea:"Crear una encuesta en Survey123, capturar 5 registros de prueba y mostrarlos en un Dashboard. Entregar el enlace del tablero.",
+        quiz:[
+          {q:"Survey123 se especializa en…", o:["Formularios de captura","Edición ráster","Impresión 3D","Modelado de redes"], a:0},
+          {q:"Un Dashboard muestra…", o:["Indicadores y mapas en tiempo real","Solo texto","Hojas de Excel","Correos"], a:0},
+          {q:"StoryMaps combina mapas con…", o:["Narrativa y multimedia","Solo tablas","Comandos SQL","Código Python"], a:0} ]
+      }
+    ]
+  },
+  {
+    id:"qgis", cat:"SIG · QGIS (Proyecto PROEZA / FAO)", title:"Manejo de QGIS para captura y presentación de datos",
+    glyph:"◈", color:"linear-gradient(135deg,#2f6b47,#18403e)",
+    desc:"Digitalización en campo, edición de capas vectoriales y cartografía con QGIS, sobre datos reales del Proyecto PROEZA.",
+    hours:"30 h",
+    incluye:["Materiales audiovisuales prácticos","Soporte posterior","Certificado de participación","Datasets del Proyecto PROEZA"],
+    modules:[
+      { t:"Módulo 1 — Fundamentos SIG e importación de datos", tipo:"practica",
+        obj:"Conocer los conceptos básicos de los SIG y dar los primeros pasos en QGIS importando datos tabulares del Proyecto PROEZA.",
+        temas:[
+          "Preparación del entorno: estructura de carpetas y nomenclatura",
+          "¿Qué es un SIG? e interfaz de QGIS",
+          "Carga de capa vectorial, navegación y tabla de atributos",
+          "Simbología categorizada y graduada, etiquetado",
+          "Importar Excel como capa de puntos y vincular tablas (Join)" ],
+        mats:[{n:"Guia_Dia1_CURSO_QGIS_2026.pdf",s:"2.1 MB",i:"📕"},{n:"Datos de viviendas.xlsx",s:"95 KB",i:"📊"},{n:"Informacion del participante.xlsx",s:"120 KB",i:"📊"}],
+        tarea:"Crear la estructura de carpetas oficial, cargar las viviendas desde Excel como capa de puntos y aplicar simbología categorizada por comunidad. Entregar captura del proyecto.",
+        quiz:[
+          {q:"Para crear una capa de puntos desde Excel se necesitan campos de…", o:["Latitud y longitud","Color","Fecha","Nombre"], a:0},
+          {q:"Un Join (común) vincula tablas usando…", o:["Un campo en común (ID)","La ubicación","El color","El tamaño"], a:0},
+          {q:"La simbología categorizada asigna símbolos según…", o:["Una categoría de un campo","El orden de carga","La resolución","El SRC"], a:0} ]
+      },
+      { t:"Módulo 2 — Creación de capas, digitalización y consultas", tipo:"practica",
+        obj:"Entender los procedimientos para crear y editar datos espaciales, y consultar la tabla de atributos.",
+        temas:[
+          "Crear capa de puntos desde Excel y vincular tablas",
+          "Instalar plugin QuickMapServices (mapas base)",
+          "Crear shapefile de polígonos (Fincas) y digitalizar",
+          "Tabla de atributos: edición, campos y calculadora de campos",
+          "Selección por expresión y formularios de atributos" ],
+        mats:[{n:"Guia_Dia2_CURSO_QGIS_2026.pdf",s:"2.4 MB",i:"📕"},{n:"Informacion de parcelas.xlsx",s:"110 KB",i:"📊"}],
+        tarea:"Digitalizar 5 fincas como polígonos sobre el mapa base satelital, calcular su superficie con la calculadora de campos y configurar un formulario con listas desplegables. Entregar el shapefile.",
+        quiz:[
+          {q:"QuickMapServices sirve para…", o:["Agregar mapas base","Calcular áreas","Exportar PDF","Crear etiquetas"], a:0},
+          {q:"La calculadora de campos permite…", o:["Calcular geometría y valores","Cambiar el idioma","Instalar plugins","Imprimir"], a:0},
+          {q:"Un formulario con lista desplegable ayuda a…", o:["Estandarizar la captura de datos","Acelerar el zoom","Comprimir la capa","Cambiar el SRC"], a:0} ]
+      },
+      { t:"Módulo 3 — Análisis espacial y geoprocesos", tipo:"practica",
+        obj:"Realizar análisis espacial para construir un mapa de cobertura territorial del Proyecto PROEZA.",
+        temas:[
+          "Reproyectar capas a UTM 21S (EPSG:32721)",
+          "Buffer de viviendas y disolución de buffers",
+          "Recortar distritos (Clip) e intersección parcelas + distritos",
+          "Selección por localización y unión espacial de atributos",
+          "Cartografía temática de resultados" ],
+        mats:[{n:"Guia_Dia3_CURSO_QGIS_2026.pdf",s:"2.6 MB",i:"📕"},{n:"Distritos_Paraguay.zip",s:"3.3 MB",i:"🗺️"}],
+        tarea:"Reproyectar las capas a UTM 21S, generar un buffer de 1 km de las viviendas, disolverlo y recortar los distritos. Entregar el mapa de cobertura resultante.",
+        quiz:[
+          {q:"¿Por qué reproyectar a UTM 21S antes de un buffer?", o:["Para medir distancias en metros","Para cambiar el color","Para reducir el peso","No es necesario"], a:0},
+          {q:"Disolver (Dissolve) sirve para…", o:["Unir geometrías eliminando límites internos","Borrar la capa","Cambiar el SRC","Crear etiquetas"], a:0},
+          {q:"Un Join espacial transfiere atributos según…", o:["La ubicación geográfica","Un ID común","El nombre del archivo","La fecha"], a:0} ]
+      },
+      { t:"Módulo 4 — Simbología avanzada y composición de mapas", tipo:"practica",
+        obj:"Crear una composición cartográfica profesional con QGIS y automatizar su producción.",
+        temas:[
+          "Simbología basada en reglas",
+          "Estadísticas zonales",
+          "Compositor de mapas: mapa principal y elementos cartográficos",
+          "Mapa de ubicación, logos y exportación (PDF/PNG)",
+          "Atlas automático por distritos" ],
+        mats:[{n:"Guia_Dia4_CURSO_QGIS_2026.pdf",s:"2.8 MB",i:"📕"},{n:"Plantilla_compositor.qpt",s:"95 KB",i:"📄"}],
+        tarea:"Componer un mapa final con leyenda, escala, norte, logo y mapa de ubicación, y generar un Atlas automático por distrito exportado a PDF. Entregar el PDF.",
+        quiz:[
+          {q:"El Atlas automático genera…", o:["Un mapa por cada entidad de una capa","Una sola imagen","Una tabla","Un gráfico"], a:0},
+          {q:"Las estadísticas zonales resumen valores de un ráster por…", o:["Zonas/polígonos","Color","Escala","Fecha"], a:0},
+          {q:"El compositor de mapas se usa para…", o:["Diseñar la salida cartográfica","Editar atributos","Instalar plugins","Reproyectar"], a:0} ]
+      },
+      { t:"Módulo 5 — Captura en campo con QField y publicación web", tipo:"practica",
+        obj:"Exportar el proyecto a aplicaciones móviles para trabajo de campo y publicar resultados en la web.",
+        temas:[
+          "Instalar QField Sync en QGIS",
+          "Preparar y empaquetar el proyecto para QField",
+          "Transferir al celular (USB) y captura con GPS",
+          "Sincronizar datos de QField de vuelta a QGIS",
+          "Google My Maps: crear mapa web y compartir" ],
+        mats:[{n:"Guia_Dia5_CURSO_QGIS_2026.pdf",s:"2.5 MB",i:"📕"},{n:"Proyecto_QField_PROEZA.zip",s:"6.1 MB",i:"🗺️"}],
+        tarea:"Empaquetar el proyecto con QField Sync, capturar 3 puntos de prueba en el celular, sincronizarlos a QGIS y publicar un mapa en Google My Maps. Entregar el enlace.",
+        quiz:[
+          {q:"QField permite…", o:["Capturar datos en campo con el GPS","Editar fotos","Diseñar logos","Crear macros"], a:0},
+          {q:"QField Sync se usa para…", o:["Empaquetar y sincronizar proyectos","Imprimir mapas","Calcular áreas","Cambiar idioma"], a:0},
+          {q:"Google My Maps sirve para…", o:["Publicar un mapa web compartible","Editar ráster","Crear geodatabases","Reproyectar"], a:0} ]
+      }
+    ]
+  },
+  {
+    id:"powerbi", cat:"Business Intelligence · Power BI", title:"Transformación Digital con Power BI",
+    glyph:"▦", color:"linear-gradient(135deg,#34A678,#18403e)",
+    desc:"Del dato a la visualización: conectar, limpiar, modelar y visualizar datos con Power BI. Curso introductorio de 20 horas.",
+    hours:"20 h",
+    incluye:["Material de apoyo y recursos","Ejercicios guiados paso a paso","Evaluación final con informe propio","Certificación"],
+    modules:[
+      { t:"Módulo 1 — Fundamentos y Estructura de Datos", tipo:"teoria",
+        obj:"Comprender el ecosistema de Power BI y la arquitectura de datos: hojas de cálculo vs. bases de datos relacionales.",
+        temas:[
+          "¿Qué es Power BI y para qué sirve?",
+          "Componentes: Desktop, Service y Mobile. Flujo de trabajo",
+          "Tipos de datos: texto, número, fecha, booleano",
+          "Tablas, filas y columnas: base de datos vs. hoja de Excel" ],
+        mats:[{n:"Guía instalación Power BI Desktop.pdf",s:"800 KB",i:"📕"},{n:"Dataset_ventas.xlsx",s:"120 KB",i:"📊"}],
+        tarea:"Instalar Power BI Desktop, importar el Dataset_ventas.xlsx e identificar el tipo de dato de cada columna. Entregar captura del modelo cargado.",
+        quiz:[
+          {q:"¿Cuál NO es un componente de Power BI?", o:["Desktop","Service","Mobile","Compiler"], a:3},
+          {q:"Un dato de tipo booleano representa…", o:["Verdadero/Falso","Texto largo","Una fecha","Una imagen"], a:0},
+          {q:"Una base de datos relacional se organiza en…", o:["Tablas relacionadas","Una sola hoja","Carpetas","Diapositivas"], a:0} ]
+      },
+      { t:"Módulo 2 — Conectividad y Gestión de Fuentes", tipo:"teoria",
+        obj:"Conectar informes con diversas fuentes asegurando la integridad y actualización automática.",
+        temas:[
+          "Importar datos desde Excel y otras fuentes",
+          "Conexión con bases de datos y servicios online",
+          "Actualización de datos y configuración de conexiones" ],
+        mats:[{n:"Guía conexión de fuentes.pdf",s:"640 KB",i:"📄"}],
+        tarea:"Conectar Power BI a dos fuentes distintas (Excel y un origen web/CSV) y configurar la actualización. Entregar el archivo .pbix.",
+        quiz:[
+          {q:"La actualización programada sirve para…", o:["Refrescar datos automáticamente","Cambiar colores","Crear medidas","Imprimir"], a:0},
+          {q:"Power BI puede conectarse a…", o:["Múltiples fuentes de datos","Solo Excel","Solo CSV","Solo SQL"], a:0},
+          {q:"Importar datos crea…", o:["Una copia en el modelo","Un acceso directo","Una imagen","Un PDF"], a:0} ]
+      },
+      { t:"Módulo 3 — ETL y Preparación con Power Query", tipo:"practica",
+        obj:"Dominar el proceso ETL para limpiar datos crudos y convertirlos en tablas útiles para el análisis.",
+        temas:[
+          "Introducción a Power Query y el editor de consultas",
+          "Filtrar, eliminar duplicados, cambiar tipos de datos",
+          "Unir y transformar tablas",
+          "Ejercicios prácticos de limpieza de datos reales" ],
+        mats:[{n:"Ejercicios_PowerQuery.xlsx",s:"180 KB",i:"📊"},{n:"Guía Power Query.pdf",s:"1.1 MB",i:"📕"}],
+        tarea:"Limpiar el dataset provisto en Power Query: eliminar duplicados, corregir tipos de datos y combinar dos tablas. Entregar el .pbix con los pasos aplicados.",
+        quiz:[
+          {q:"ETL significa…", o:["Extraer, Transformar, Cargar","Editar, Tabular, Limpiar","Exportar, Traducir, Leer","Ninguna"], a:0},
+          {q:"Power Query se usa para…", o:["Limpiar y transformar datos","Diseñar visualizaciones","Crear medidas DAX","Publicar informes"], a:0},
+          {q:"Eliminar duplicados ayuda a…", o:["Evitar conteos inflados","Cambiar colores","Crear relaciones","Acelerar la red"], a:0} ]
+      },
+      { t:"Módulo 4 — Modelado de Datos Relacional", tipo:"practica",
+        obj:"Construir un modelo eficiente con relaciones lógicas que permitan el filtrado cruzado entre tablas.",
+        temas:[
+          "¿Por qué son importantes los modelos de datos?",
+          "Relaciones: uno a uno, uno a muchos",
+          "Creación y edición de relaciones en Power BI",
+          "Buenas prácticas en el modelado (esquema estrella)" ],
+        mats:[{n:"Guía modelado estrella.pdf",s:"1.3 MB",i:"📕"}],
+        tarea:"Diseñar un esquema estrella con al menos una tabla de hechos y dos de dimensiones, creando las relaciones correctas. Entregar el .pbix.",
+        quiz:[
+          {q:"En un esquema estrella, la tabla central es…", o:["La tabla de hechos","Una dimensión","El calendario","La fuente"], a:0},
+          {q:"Una relación uno a muchos conecta…", o:["Una dimensión con muchos hechos","Dos hechos","Dos imágenes","Nada"], a:0},
+          {q:"Un buen modelo mejora…", o:["El rendimiento y el filtrado cruzado","El tamaño de fuente","El color","La impresión"], a:0} ]
+      },
+      { t:"Módulo 5 — Cálculo Avanzado con DAX", tipo:"practica",
+        obj:"Usar expresiones DAX para generar métricas complejas, KPIs y cálculos dinámicos.",
+        temas:[
+          "¿Qué es DAX y para qué sirve?",
+          "Medidas vs. columnas calculadas",
+          "Funciones básicas: SUM, AVERAGE, COUNT, IF, CALCULATE",
+          "Ejercicios prácticos de creación de métricas" ],
+        mats:[{n:"Plantillas_DAX.pdf",s:"940 KB",i:"📄"}],
+        tarea:"Crear al menos 3 medidas DAX (total de ventas, promedio y una con CALCULATE filtrada). Entregar el .pbix documentando cada fórmula.",
+        quiz:[
+          {q:"DAX significa…", o:["Data Analysis Expressions","Data Access X","Dynamic Axis","Ninguna"], a:0},
+          {q:"Una medida se calcula…", o:["En el momento de la visualización","Al guardar","Solo al imprimir","Nunca"], a:0},
+          {q:"CALCULATE permite…", o:["Modificar el contexto de filtro","Cambiar colores","Crear relaciones","Importar datos"], a:0} ]
+      },
+      { t:"Módulo 6 — Visualización e Interactividad", tipo:"practica",
+        obj:"Diseñar tableros interactivos y reportes de alto impacto visual para comunicar hallazgos.",
+        temas:[
+          "Tipos de visualizaciones en Power BI",
+          "Diseño de reportes interactivos",
+          "Filtros, segmentadores y jerarquías",
+          "Exportar y compartir informes" ],
+        mats:[{n:"Ejemplo_dashboard.pbix",s:"2.1 MB",i:"📊"},{n:"Checklist_publicacion.pdf",s:"560 KB",i:"📄"}],
+        tarea:"Construir un dashboard final con al menos 4 visualizaciones, segmentadores y un KPI. Publicarlo en Power BI Service y entregar el enlace.",
+        quiz:[
+          {q:"Un segmentador (slicer) sirve para…", o:["Filtrar el reporte interactivamente","Cambiar el tema","Crear medidas","Conectar fuentes"], a:0},
+          {q:"Power BI Service permite…", o:["Publicar y compartir en la nube","Editar fotos","Crear geodatabases","Instalar Windows"], a:0},
+          {q:"Un KPI muestra…", o:["Un indicador clave de desempeño","Una imagen","Un mapa","Un texto largo"], a:0} ]
+      }
+    ]
+  }
+];
+
+const PASS = 80; // % mínimo para aprobar cuestionario
+
+/* ---------- estado en memoria ---------- */
+// se inicializa por módulo: temasVistos[], quizScore(null|num), taskState('pend'|'rev'|'ok'|'no')
+function initState(){
+  COURSES.forEach(c=>c.modules.forEach(m=>{
+    m._seen = m.temas.map(()=>false);
+    m._quiz = null;          // null = sin rendir; número = % obtenido
+    m._task = 'pend';        // pend | rev | ok | no
+  }));
+}
+initState();
+
+/* ---------- helpers ---------- */
+const moduleComplete = m => m._seen.every(Boolean) && m._quiz!==null && m._quiz>=PASS && m._task==='ok';
+const courseProgress = c => Math.round(c.modules.filter(moduleComplete).length / c.modules.length * 100);
+const canCertify = c => c.modules.every(moduleComplete);
+
+/* ---------- instructores ---------- */
+const INSTRUCTORS = [
+  { id:"ramon", name:"Ramón Torres", role:"Instructor · Administrador", initials:"RT",
+    title:"Ing. Agrónomo · Especialista en SIG y Ciencia del Suelo",
+    bio:"Director de SoilTech. 3 años de experiencia en manejo de suelos, análisis de datos aplicados a degradación, monitoreo territorial y planificación del uso del suelo. Maestrando en Ciencia del Suelo y Ordenamiento Territorial (UNA) y especializando en SIG y Teledetección (Universidad del Pacífico).",
+    tags:["ArcGIS Pro","QGIS","Teledetección","Ciencia del Suelo","Power BI"],
+    courses:["arcgis","qgis","powerbi"] },
+  { id:"fernando", name:"Fernando Morán", role:"Instructor · Administrador", initials:"FM",
+    title:"Instructor SoilTech Academy",
+    bio:"Perfil pendiente de completar. (Plantilla: experiencia, formación y especialidades del instructor.)",
+    tags:["SIG","Capacitación"], courses:["arcgis"] },
+  { id:"alfredo", name:"Alfredo Morán", role:"Instructor · Administrador", initials:"AM",
+    title:"Instructor SoilTech Academy",
+    bio:"Perfil pendiente de completar. (Plantilla: experiencia, formación y especialidades del instructor.)",
+    tags:["SIG","Capacitación"], courses:["qgis"] },
+];
+
+/* ---------- rol y vistas ---------- */
+let ROLE='alumno';
+const VIEWS=['dashboard','detail','quizPage','profilePage','certsPage','instructorsPage','instructorPanel','adminPanel'];
+function hideAll(){VIEWS.forEach(v=>{const el=document.getElementById(v);if(el)el.style.display='none';});}
+function show(v){hideAll();document.getElementById(v).style.display='block';window.scrollTo(0,0);}
+function setRole(r){
+  ROLE=r;
+  ['alumno','instructor','admin'].forEach(x=>document.getElementById('rl-'+x).classList.toggle('on',x===r));
+  goHome();
+}
+function goHome(){
+  if(ROLE==='alumno'){renderGrid();renderInstrPreview();show('dashboard');}
+  else if(ROLE==='instructor'){renderInstructorPanel();show('instructorPanel');}
+  else {renderAdminPanel();show('adminPanel');}
+}
+
+
+/* ---------- login ---------- */
+let formMode="login", USER={name:"", email:"", uid:null, role:"alumno"};
+
+function mode(m){formMode=m;
+  document.getElementById('tLogin').classList.toggle('on',m==='login');
+  document.getElementById('tReg').classList.toggle('on',m==='reg');
+  document.getElementById('nameField').style.display=m==='reg'?'block':'none';
+  document.getElementById('formTitle').textContent=m==='reg'?'Creá tu cuenta':'Bienvenido de vuelta';
+  document.getElementById('formSub').textContent=m==='reg'?'Registrate para acceder a las capacitaciones.':'Accedé a tus capacitaciones técnicas.';
+  document.getElementById('submitBtn').textContent=m==='reg'?'Crear cuenta':'Entrar';
+  setLoginError('');
+}
+function setLoginError(msg){
+  let el=document.getElementById('loginError');
+  if(!el){
+    el=document.createElement('p');el.id='loginError';
+    el.style.cssText='color:var(--red);font-size:13px;margin-top:12px;text-align:center;min-height:18px';
+    document.getElementById('submitBtn').insertAdjacentElement('afterend',el);
+  }
+  el.textContent=msg||'';
+}
+function setBtnLoading(on){
+  const b=document.getElementById('submitBtn');
+  b.disabled=on; b.style.opacity=on?'.6':'1';
+  b.textContent=on?'Procesando…':(formMode==='reg'?'Crear cuenta':'Entrar');
+}
+
+async function enter(){
+  const email=document.getElementById('inEmail').value.trim();
+  const pass=document.getElementById('inPass').value;
+  const name=document.getElementById('inName').value.trim();
+  setLoginError('');
+  if(!email||!pass){setLoginError('Completá correo y contraseña.');return;}
+  if(formMode==='reg'&&!name){setLoginError('Ingresá tu nombre completo.');return;}
+  setBtnLoading(true);
+  try{
+    if(formMode==='reg') await window.fbRegister(name,email,pass);
+    else await window.fbLogin(email,pass);
+    // el listener onAuthStateChanged se encarga de entrar
+  }catch(e){
+    setLoginError(window.fbErr(e.code));
+    setBtnLoading(false);
+  }
+}
+async function logout(){
+  try{ await window.fbLogout(); }catch(e){}
+}
+
+// --- callbacks desde el módulo Firebase ---
+window.onAuthIn = function(u){
+  USER={name:u.name, email:u.email, uid:u.uid, role:u.role||'alumno'};
+  document.getElementById('uName').textContent=USER.name;
+  document.getElementById('uEmail').textContent=USER.email;
+  document.getElementById('uAvatar').textContent=(USER.name||'?').charAt(0).toUpperCase();
+  setBtnLoading(false);
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  applyRoleVisibility();
+  setRole(USER.role);   // entra al panel según su rol real
+};
+window.onAuthOut = function(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login').style.display='flex';
+  setBtnLoading(false);
+  // limpiar campos
+  ['inName','inEmail','inPass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+};
+
+// el selector de rol es solo para DEMO/staff; un alumno real no debería verlo
+function applyRoleVisibility(){
+  const sw=document.querySelector('.role-switch');
+  if(!sw)return;
+  // Si el usuario es alumno, ocultamos el selector (no puede cambiarse de rol).
+  // Instructores/admin lo ven para navegar entre sus paneles.
+  sw.style.display = (USER.role==='alumno') ? 'none' : 'flex';
+}
+
+/* ---------- dashboard ---------- */
+function renderGrid(){
+  const g=document.getElementById('courseGrid');g.innerHTML='';
+  COURSES.forEach((c,idx)=>{
+    const done=c.modules.filter(moduleComplete).length, p=courseProgress(c);
+    const card=document.createElement('div');card.className='course-card';
+    card.style.animationDelay=(idx*0.08)+'s';card.onclick=()=>openCourse(c.id);
+    card.innerHTML=`<div class="course-thumb" style="background:${c.color}">
+        <span class="lvl">Certificable</span><span class="badge-mod">${c.modules.length} módulos</span>
+        <span class="glyph">${c.glyph}</span></div>
+      <div class="course-body"><div class="cat">${c.cat}</div><h3>${c.title}</h3>
+        <div class="desc">${c.desc}</div>
+        <div class="course-meta"><span>⏱ ${c.hours}</span><span>📚 ${c.modules.length} módulos</span><span>🎓 Certificación</span></div>
+        <div class="progress-label"><span>${done}/${c.modules.length} módulos completos</span><span>${p}%</span></div>
+        <div class="progress"><i style="width:${p}%"></i></div></div>`;
+    g.appendChild(card);
+  });
+}
+
+/* ---------- detail ---------- */
+let curCourse=null;
+function openCourse(id){curCourse=COURSES.find(c=>c.id===id);renderDetail();window.scrollTo(0,0);}
+function goDash(){renderGrid();renderInstrPreview();show('dashboard');}
+
+const TIPO={teoria:{cls:'tag-teoria',label:'Teoría'},practica:{cls:'tag-practica',label:'Con práctica'}};
+const TASKPILL={pend:['pill-pend','Pendiente'],rev:['pill-rev','En revisión'],ok:['pill-ok','Aprobada'],no:['pill-no','Rechazada']};
+
+function renderDetail(){
+  const c=curCourse, p=courseProgress(c), done=c.modules.filter(moduleComplete).length;
+  show('detail');
+  const d=document.getElementById('detail');
+
+  let mods='';
+  c.modules.forEach((m,i)=>{
+    // temas con video
+    const temas=m.temas.map((t,j)=>`
+      <div class="tema${m._seen[j]?' seen':''}" id="tema-${i}-${j}">
+        <div class="tema-head" onclick="toggleTema(${i},${j})">
+          <div class="tema-dot">${m._seen[j]?'✓':j+1}</div>
+          <div class="tt">${t}</div>
+          <div class="pico">▶ Video</div>
+        </div>
+        <div class="tema-body" id="tbody-${i}-${j}"><div class="tema-body-inner">
+          <div class="vbox"><div><div class="ico">▶</div><b>Aquí irá el video de YouTube</b><span>${t}</span></div></div>
+          <button class="seen-btn${m._seen[j]?' on':''}" onclick="markSeen(${i},${j},event)">${m._seen[j]?'Tema visto ✓':'Marcar tema como visto'}</button>
+        </div></div>
+      </div>`).join('');
+
+    const matsHtml=m.mats.map(f=>`<div class="mat-item"><div class="left"><div class="fileico">${f.i}</div>
+        <div style="min-width:0"><div class="name">${f.n}</div><div class="sz">${f.s}</div></div></div>
+        <button class="dl">Descargar</button></div>`).join('');
+
+    // tarea
+    const [tcls,tlabel]=TASKPILL[m._task];
+    let taskActions='';
+    if(m._task==='pend') taskActions=`<button class="act-btn" onclick="submitTask(${i})">Entregar tarea</button>`;
+    else if(m._task==='rev') taskActions=`<span style="font-size:13px;color:var(--brown-soft)">⏳ Tu entrega está en revisión por un instructor de SoilTech Academy.</span>`;
+    else if(m._task==='no') taskActions=`<span style="font-size:13px;color:var(--red);display:block;margin-bottom:10px">✗ El instructor solicitó correcciones.</span><button class="act-btn" onclick="submitTask(${i})">Volver a entregar</button>`;
+    else taskActions=`<span style="font-size:13px;color:var(--green);font-weight:600">✓ Tarea aprobada por el instructor</span>`;
+
+    // quiz — ahora se abre en página aparte
+    const quizDone=m._quiz!==null;
+    const quizPass=quizDone&&m._quiz>=PASS;
+    let quizPanel='';
+    if(quizDone){
+      quizPanel=`<div class="quiz-result ${quizPass?'ok':'no'}">${quizPass?'✓ Aprobado':'✗ No aprobado'} — último intento: ${m._quiz}% ${quizPass?'':'(mínimo '+PASS+'%)'}</div>
+        <button class="act-btn" style="margin-top:12px" onclick="openQuiz(${i})">${quizPass?'Repetir cuestionario':'Reintentar cuestionario'}</button>`;
+    } else {
+      quizPanel=`<button class="act-btn" onclick="openQuiz(${i})">Acceder al cuestionario →</button>`;
+    }
+
+    const cdone=moduleComplete(m);
+    mods+=`<div class="acc${cdone?' done':''}" id="acc-${i}">
+      <div class="acc-head" onclick="toggleAcc(${i})">
+        <div class="acc-num">${cdone?'✓':i+1}</div>
+        <div class="acc-info"><b>${m.t}</b><span>${m.temas.length} temas · ${m.mats.length} materiales · tarea + cuestionario</span></div>
+        <div class="acc-meta"><span class="acc-tag ${TIPO[m.tipo].cls}">${TIPO[m.tipo].label}</span><span class="chev">⌄</span></div>
+      </div>
+      <div class="acc-body" id="body-${i}"><div class="acc-body-inner">
+        <div class="obj"><b>Objetivo:</b> ${m.obj}</div>
+        <div class="block-label">🎬 Temas del módulo</div>
+        ${temas}
+        <div class="mats"><div class="block-label">📂 Materiales del módulo</div>${matsHtml}</div>
+        <div class="panel"><div class="panel-head"><h4>📝 Tarea del módulo</h4><span class="pill ${tcls}">${tlabel}</span></div>
+          <p>${m.tarea}</p>${taskActions}</div>
+        <div class="panel"><div class="panel-head"><h4>❓ Cuestionario de evaluación</h4>
+          <span class="pill ${quizDone?(quizPass?'pill-ok':'pill-no'):'pill-pend'}">${quizDone?m._quiz+'%':'Sin rendir'}</span></div>
+          <p>Cuestionario de selección múltiple. Intentos ilimitados; se aprueba con un mínimo de ${PASS}%.</p>
+          ${quizPanel}</div>
+        <div class="mod-status">
+          <span class="mini-pill ${m._seen.every(Boolean)?'pill-ok':'pill-pend'}">Temas ${m._seen.filter(Boolean).length}/${m._seen.length}</span>
+          <span class="mini-pill ${m._task==='ok'?'pill-ok':'pill-pend'}">Tarea ${m._task==='ok'?'aprobada':'pendiente'}</span>
+          <span class="mini-pill ${quizPass?'pill-ok':'pill-pend'}">Cuestionario ${quizPass?'aprobado':'pendiente'}</span>
+        </div>
+      </div></div></div>`;
+  });
+
+  // certification checklist
+  const allMods=c.modules.every(m=>m._seen.every(Boolean));
+  const allQuiz=c.modules.every(m=>m._quiz!==null&&m._quiz>=PASS);
+  const allTask=c.modules.every(m=>m._task==='ok');
+  const ready=canCertify(c);
+
+  d.innerHTML=`<button class="back" onclick="goDash()">← Volver a mis capacitaciones</button>
+    <div class="detail-hero" style="background:${c.color}">
+      <div class="cat">${c.cat}</div><h1>${c.title}</h1><p>${c.desc}</p>
+      <div class="hero-stats">
+        <div class="st"><b>${c.hours}</b><span>DURACIÓN</span></div>
+        <div class="st"><b>${c.modules.length}</b><span>MÓDULOS</span></div>
+        <div class="st"><b>${done}/${c.modules.length}</b><span>COMPLETOS</span></div>
+      </div>
+      <div class="hero-prog"><div class="bar"><i style="width:${p}%"></i></div><div class="lab">${p}% de la capacitación completada</div></div>
+    </div>
+    <div class="detail-layout">
+      <div>
+        <div class="section-title">📘 Módulos de la capacitación</div>
+        <div class="section-sub">Cada módulo contiene temas con video, materiales descargables, una tarea evaluada y un cuestionario.</div>
+        <button class="act-btn ghost" style="margin-bottom:18px" onclick="toggleAll()">Expandir / contraer todo</button>
+        ${mods}
+      </div>
+      <div class="side">
+        <div class="side-card cert-card">
+          <div class="seal">🎓</div>
+          <h4>Certificación</h4>
+          <p>Habilitá tu certificado completando todos los requisitos de la capacitación.</p>
+          <ul class="cert-checklist">
+            <li class="${allMods?'met':''}">Todos los temas vistos</li>
+            <li class="${allQuiz?'met':''}">Cuestionarios aprobados (≥${PASS}%)</li>
+            <li class="${allTask?'met':''}">Tareas entregadas y aprobadas</li>
+          </ul>
+          <button class="cert-btn" ${ready?'':'disabled'} onclick="getCertification()">
+            ${ready?'Obtener certificación':'Completá los requisitos'}</button>
+        </div>
+        <div class="side-card"><h4>Detalles</h4>
+          <div class="info-row"><span class="k">Duración</span><span class="v">${c.hours}</span></div>
+          <div class="info-row"><span class="k">Módulos</span><span class="v">${c.modules.length}</span></div>
+          <div class="info-row"><span class="k">Aprobación</span><span class="v">≥ ${PASS}%</span></div>
+        </div>
+        <div class="side-card"><h4>El programa incluye</h4>
+          <ul class="incl">${c.incluye.map(x=>`<li>${x}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer">SoilTech · Soluciones Agronómicas — Consultoría y Capacitaciones</div>`;
+
+  const firstOpen=c.modules.findIndex(m=>!moduleComplete(m));
+  openAcc(firstOpen<0?0:firstOpen);
+}
+
+/* ---------- accordion modules ---------- */
+function openAcc(i){ // just open, no re-render
+  const acc=document.getElementById('acc-'+i),body=document.getElementById('body-'+i);
+  if(!acc||!body)return;
+  acc.classList.add('open');body.style.maxHeight=body.scrollHeight+'px';
+}
+function toggleAcc(i){
+  const acc=document.getElementById('acc-'+i),body=document.getElementById('body-'+i);
+  const isOpen=acc.classList.contains('open');
+  if(isOpen){acc.classList.remove('open');body.style.maxHeight=null;}
+  else{acc.classList.add('open');body.style.maxHeight=body.scrollHeight+'px';}
+}
+function toggleAll(){
+  const allOpen=curCourse.modules.every((_,i)=>document.getElementById('acc-'+i).classList.contains('open'));
+  curCourse.modules.forEach((_,i)=>{
+    const acc=document.getElementById('acc-'+i),body=document.getElementById('body-'+i);
+    if(allOpen){acc.classList.remove('open');body.style.maxHeight=null;}
+    else{acc.classList.add('open');body.style.maxHeight=body.scrollHeight+'px';}
+  });
+}
+function refresh(openIdx){ // re-render keeping a module open
+  renderDetail();
+  if(openIdx!==undefined) setTimeout(()=>openAcc(openIdx),20);
+}
+
+/* ---------- temas (video) ---------- */
+function toggleTema(i,j){
+  const t=document.getElementById('tema-'+i+'-'+j),b=document.getElementById('tbody-'+i+'-'+j);
+  const open=t.classList.contains('open');
+  if(open){t.classList.remove('open');b.style.maxHeight=null;}
+  else{t.classList.add('open');b.style.maxHeight=b.scrollHeight+'px';}
+  setTimeout(()=>recalcAcc(i),50);
+}
+function markSeen(i,j,e){e.stopPropagation();
+  curCourse.modules[i]._seen[j]=!curCourse.modules[i]._seen[j];
+  refresh(i);
+}
+function recalcAcc(i){const body=document.getElementById('body-'+i);if(body&&body.style.maxHeight)body.style.maxHeight=body.scrollHeight+'px';}
+
+/* ---------- tarea ---------- */
+function submitTask(i){curCourse.modules[i]._task='rev';refresh(i);}
+function reviewTask(i,decision){curCourse.modules[i]._task=decision;refresh(i);}
+
+/* ---------- quiz como página aparte ---------- */
+let quizCtx={mod:null, step:'intro', answers:{}};
+function openQuiz(i){
+  quizCtx={mod:i, step:'intro', answers:{}};
+  show('quizPage');
+  renderQuiz();
+}
+function backToCourse(){
+  renderDetail();
+}
+function quizPickAns(qi,oi){
+  quizCtx.answers[qi]=oi;
+  document.querySelectorAll('#quizForm .q')[qi].querySelectorAll('.opt')
+    .forEach((el,k)=>el.classList.toggle('sel',k===oi));
+}
+function startQuiz(){quizCtx.step='quiz';quizCtx.answers={};renderQuiz();window.scrollTo(0,0);}
+function submitQuiz(){
+  const m=curCourse.modules[quizCtx.mod];
+  if(Object.keys(quizCtx.answers).length<m.quiz.length){alert('Respondé todas las preguntas antes de enviar.');return;}
+  let correct=0;m.quiz.forEach((qq,qi)=>{if(quizCtx.answers[qi]===qq.a)correct++;});
+  m._quiz=Math.round(correct/m.quiz.length*100);
+  quizCtx.step='result';renderQuiz();window.scrollTo(0,0);
+}
+function renderQuiz(){
+  const c=curCourse, i=quizCtx.mod, m=c.modules[i];
+  const pg=document.getElementById('quizPage');
+  if(quizCtx.step==='intro'){
+    pg.innerHTML=`
+      <button class="back" onclick="backToCourse()">← Volver al módulo</button>
+      <div class="quiz-shell">
+        <div class="quiz-hero" style="background:${c.color}">
+          <div class="qh-eyebrow">${c.title}</div>
+          <h1>Cuestionario · ${m.t}</h1>
+        </div>
+        <div class="quiz-card">
+          <h2 style="font-size:22px;margin-bottom:16px">Características del cuestionario</h2>
+          <ul class="quiz-feats">
+            <li><span>📋</span><div><b>Selección múltiple</b><p>${m.quiz.length} preguntas, una respuesta correcta por pregunta.</p></div></li>
+            <li><span>🔁</span><div><b>Intentos ilimitados</b><p>Podés rendirlo las veces que necesites.</p></div></li>
+            <li><span>🎯</span><div><b>Aprobación: ${PASS}%</b><p>Necesitás al menos ${PASS}% de respuestas correctas para completar el módulo.</p></div></li>
+            <li><span>⏱️</span><div><b>Sin límite de tiempo</b><p>Tomate el tiempo que necesites para responder.</p></div></li>
+          </ul>
+          ${m._quiz!==null?`<div class="quiz-prev">Último intento: <b>${m._quiz}%</b> ${m._quiz>=PASS?'· Aprobado ✓':'· No aprobado'}</div>`:''}
+          <button class="btn" style="max-width:280px" onclick="startQuiz()">Comenzar cuestionario →</button>
+        </div>
+      </div>`;
+    return;
+  }
+  if(quizCtx.step==='quiz'){
+    let qs='';
+    m.quiz.forEach((qq,qi)=>{
+      const opts=qq.o.map((op,oi)=>`<div class="opt${quizCtx.answers[qi]===oi?' sel':''}" onclick="quizPickAns(${qi},${oi})"><div class="mk"></div>${op}</div>`).join('');
+      qs+=`<div class="q"><div class="qt">${qi+1}. ${qq.q}</div>${opts}</div>`;
+    });
+    pg.innerHTML=`
+      <button class="back" onclick="backToCourse()">← Salir sin enviar</button>
+      <div class="quiz-shell">
+        <div class="quiz-hero" style="background:${c.color}">
+          <div class="qh-eyebrow">${c.title}</div>
+          <h1>${m.t}</h1>
+          <p style="color:rgba(255,255,255,.82);font-size:14px;margin-top:8px">${m.quiz.length} preguntas · aprobás con ${PASS}%</p>
+        </div>
+        <div class="quiz-card">
+          <div id="quizForm">${qs}</div>
+          <button class="btn" style="max-width:280px" onclick="submitQuiz()">Enviar respuestas</button>
+        </div>
+      </div>`;
+    return;
+  }
+  // result
+  const pass=m._quiz>=PASS;
+  let review='';
+  m.quiz.forEach((qq,qi)=>{
+    const opts=qq.o.map((op,oi)=>{
+      let cls='opt';
+      if(oi===qq.a)cls+=' correct'; else if(quizCtx.answers[qi]===oi)cls+=' wrong';
+      return `<div class="${cls}"><div class="mk"></div>${op}</div>`;
+    }).join('');
+    review+=`<div class="q"><div class="qt">${qi+1}. ${qq.q}</div>${opts}</div>`;
+  });
+  pg.innerHTML=`
+    <button class="back" onclick="backToCourse()">← Volver al módulo</button>
+    <div class="quiz-shell">
+      <div class="quiz-hero" style="background:${c.color}">
+        <div class="qh-eyebrow">${c.title}</div>
+        <h1>Resultado · ${m.t}</h1>
+      </div>
+      <div class="quiz-card">
+        <div class="result-big ${pass?'ok':'no'}">
+          <div class="rb-score">${m._quiz}%</div>
+          <div class="rb-msg">${pass?'¡Aprobaste el cuestionario! ✓':'Aún no alcanzaste el '+PASS+'% requerido'}</div>
+        </div>
+        <div class="block-label" style="margin-top:24px">📖 Revisión de respuestas</div>
+        ${review}
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+          <button class="act-btn" onclick="startQuiz()">Reintentar cuestionario</button>
+          <button class="act-btn ghost" onclick="backToCourse()">Volver al módulo</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ---------- certification ---------- */
+function getCertification(){
+  document.getElementById('certCourseName').textContent=curCourse.title;
+  document.getElementById('certWho').textContent='Otorgado a '+USER.name+' por SoilTech Academy.';
+  document.getElementById('certModal').classList.add('show');
+}
+function closeCert(){document.getElementById('certModal').classList.remove('show');}
+
+/* ============ NUEVAS VISTAS ============ */
+
+/* --- preview de instructores en el dashboard del alumno --- */
+function renderInstrPreview(){
+  const g=document.getElementById('instrPreview');if(!g)return;g.innerHTML='';
+  INSTRUCTORS.forEach((ins,idx)=>{
+    const el=document.createElement('div');el.className='instr-card';el.style.animationDelay=(idx*.07)+'s';
+    el.innerHTML=`<div class="instr-top"><div class="instr-av">${ins.initials}</div></div>
+      <div class="instr-body"><h3>${ins.name}</h3><div class="role">${ins.role}</div>
+        <p>${ins.bio.length>120?ins.bio.slice(0,120)+'…':ins.bio}</p>
+        <div class="instr-tags">${ins.tags.map(t=>`<span>${t}</span>`).join('')}</div></div>`;
+    el.style.cursor='pointer';el.onclick=()=>renderInstructorsPage();
+    g.appendChild(el);
+  });
+}
+
+/* --- página pública: Conocé a tus instructores --- */
+function renderInstructorsPage(){
+  const p=document.getElementById('instructorsPage');
+  const cards=INSTRUCTORS.map(ins=>{
+    const courseTitles=ins.courses.map(id=>{const c=COURSES.find(x=>x.id===id);return c?c.title:'';}).filter(Boolean);
+    return `<div class="instr-card">
+      <div class="instr-top"><div class="instr-av">${ins.initials}</div></div>
+      <div class="instr-body"><h3>${ins.name}</h3><div class="role">${ins.role}</div>
+        <p style="color:var(--green-deep);font-weight:600;font-size:13px;margin-bottom:8px">${ins.title}</p>
+        <p>${ins.bio}</p>
+        <div class="block-label" style="margin-bottom:8px">Dicta</div>
+        <div class="instr-tags" style="margin-bottom:12px">${courseTitles.map(t=>`<span>${t}</span>`).join('')}</div>
+        <div class="block-label" style="margin-bottom:8px">Especialidades</div>
+        <div class="instr-tags">${ins.tags.map(t=>`<span>${t}</span>`).join('')}</div>
+      </div></div>`;
+  }).join('');
+  p.innerHTML=`<button class="back" onclick="goHome()">← Volver</button>
+    <div class="page-head"><div class="eyebrow">Equipo SoilTech</div><h1>Conocé a tus instructores</h1>
+      <p>Profesionales que dictan y evalúan las capacitaciones de SoilTech Academy.</p></div>
+    <div class="grid">${cards}</div>
+    <div class="footer">SoilTech · Soluciones Agronómicas</div>`;
+  show('instructorsPage');
+}
+
+/* --- perfil del usuario --- */
+function openProfile(){renderProfile();}
+function renderProfile(){
+  const p=document.getElementById('profilePage');
+  p.innerHTML=`<button class="back" onclick="goHome()">← Volver</button>
+    <div class="page-head"><div class="eyebrow">Mi cuenta</div><h1>Editar perfil</h1></div>
+    <div class="profile-grid">
+      <div class="profile-photo">
+        <div class="big-av">${USER.name.charAt(0).toUpperCase()}</div>
+        <button class="act-btn ghost" onclick="alert('En la versión conectada: subir foto a Firebase Storage.')">Cambiar foto</button>
+        <div style="margin-top:18px;text-align:left">
+          <div class="block-label">Mis accesos rápidos</div>
+          <button class="act-btn ghost" style="width:100%;margin-bottom:8px" onclick="renderCerts()">🎓 Mis certificados</button>
+          <button class="act-btn ghost" style="width:100%" onclick="renderInstructorsPage()">👤 Instructores</button>
+        </div>
+      </div>
+      <div>
+        <div class="form-card" style="margin-bottom:18px"><h4>Datos personales</h4>
+          <div class="frow">
+            <div class="fg"><label>Nombre completo</label><input id="pf-name" value="${USER.name}"></div>
+            <div class="fg"><label>Correo electrónico</label><input id="pf-email" value="${USER.email}"></div>
+          </div>
+          <div class="frow">
+            <div class="fg"><label>Teléfono</label><input id="pf-phone" placeholder="0982 ..."></div>
+            <div class="fg"><label>Ciudad</label><input id="pf-city" placeholder="San Lorenzo"></div>
+          </div>
+          <div class="fg"><label>Sobre mí</label><textarea rows="3" placeholder="Breve descripción profesional"></textarea></div>
+          <button class="act-btn" onclick="saveProfile()">Guardar cambios</button>
+        </div>
+        <div class="form-card"><h4>Seguridad</h4>
+          <div class="frow">
+            <div class="fg"><label>Nueva contraseña</label><input type="password" placeholder="••••••••"></div>
+            <div class="fg"><label>Repetir contraseña</label><input type="password" placeholder="••••••••"></div>
+          </div>
+          <button class="act-btn ghost" onclick="alert('En la versión conectada: actualizar contraseña en Firebase Auth.')">Actualizar contraseña</button>
+        </div>
+      </div>
+    </div>
+    <div class="footer">SoilTech · Soluciones Agronómicas</div>`;
+  show('profilePage');
+}
+function saveProfile(){
+  const n=document.getElementById('pf-name').value.trim()||USER.name;
+  const e=document.getElementById('pf-email').value.trim()||USER.email;
+  USER.name=n;USER.email=e;
+  document.getElementById('uName').textContent=n;
+  document.getElementById('uEmail').textContent=e;
+  document.getElementById('uAvatar').textContent=n.charAt(0).toUpperCase();
+  alert('Perfil actualizado (demo). Al conectar Firebase se guardará en tu cuenta.');
+  renderProfile();
+}
+
+/* --- mis certificados --- */
+function renderCerts(){
+  const earned=COURSES.filter(c=>canCertify(c));
+  const list = earned.length ? earned.map(c=>{
+    const code='STA-'+c.id.toUpperCase()+'-'+(2026)+'-'+Math.abs(hashCode(USER.name+c.id)).toString().slice(0,5);
+    return `<div class="cert-list-card"><div class="cert-medal">🎓</div>
+      <div class="ci"><b>${c.title}</b><span>SoilTech Academy · ${c.hours}</span>
+        <div style="margin-top:6px"><span class="cert-code">${code}</span></div></div>
+      <button class="act-btn" onclick="getCertFromList('${c.id}')">Ver / descargar</button></div>`;
+  }).join('') : `<div class="empty"><div class="ico">🎓</div>
+      <b>Todavía no tenés certificados</b><p style="margin-top:6px">Completá todos los módulos, cuestionarios y tareas de una capacitación para obtener tu certificado.</p></div>`;
+  document.getElementById('certsPage').innerHTML=`<button class="back" onclick="goHome()">← Volver</button>
+    <div class="page-head"><div class="eyebrow">Mi cuenta</div><h1>Mis certificados</h1>
+      <p>Certificados obtenidos al completar capacitaciones. Cada uno incluye un código de verificación.</p></div>
+    ${list}
+    <div class="footer">SoilTech · Soluciones Agronómicas</div>`;
+  show('certsPage');
+}
+function getCertFromList(id){curCourse=COURSES.find(c=>c.id===id);getCertification();}
+function hashCode(s){let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;}return h;}
+
+/* --- panel del INSTRUCTOR (tabs: evaluación, preguntas, mi perfil) --- */
+let instrTab='eval';
+function renderInstructorPanel(){
+  const p=document.getElementById('instructorPanel');
+  // recolectar tareas en revisión de todos los cursos
+  let pending=[];
+  COURSES.forEach(c=>c.modules.forEach((m,mi)=>{ if(m._task==='rev') pending.push({c,m,mi}); }));
+  let approved=[];
+  COURSES.forEach(c=>c.modules.forEach((m,mi)=>{ if(m._task==='ok') approved.push({c,m,mi}); }));
+
+  let evalBody;
+  if(instrTab==='eval'){
+    const rows = pending.length ? pending.map(({c,m,mi})=>`
+      <div class="data-row">
+        <div class="dr-main"><b>${m.t}</b><span>${c.title} · entregada por ${USER.name}</span>
+          <div class="review-box">
+            <div class="dr-sub" style="margin-bottom:8px"><b>Consigna:</b> ${m.tarea}</div>
+            <textarea placeholder="Devolución para el alumno (opcional)"></textarea>
+            <div class="row-actions">
+              <button class="act-btn" onclick="reviewFromPanel('${c.id}',${mi},'ok')">Aprobar</button>
+              <button class="act-btn ghost" onclick="reviewFromPanel('${c.id}',${mi},'no')">Rechazar</button>
+            </div>
+          </div>
+        </div>
+      </div>`).join('') : `<div class="empty"><div class="ico">✅</div><b>No hay tareas pendientes de evaluación</b>
+        <p style="margin-top:6px">Cuando un alumno entregue una tarea, aparecerá acá para que la revises.<br>Tip: en el rol Alumno, entregá una tarea y volvé a este panel.</p></div>`;
+    evalBody=`<div class="data-card"><div class="tbl-head">Tareas por evaluar (${pending.length})</div>${rows}</div>
+      ${approved.length?`<div class="data-card"><div class="tbl-head">Tareas aprobadas (${approved.length})</div>
+        ${approved.map(({c,m})=>`<div class="data-row"><div class="dr-main"><b>${m.t}</b><span>${c.title}</span></div>
+          <span class="pill pill-ok">Aprobada</span></div>`).join('')}</div>`:''}`;
+  } else if(instrTab==='preguntas'){
+    evalBody=`<div class="data-card"><div class="tbl-head">Consultas de alumnos</div>
+      <div class="data-row"><div class="dr-main"><b>¿La reproyección a UTM es obligatoria antes del buffer?</b>
+        <span>QGIS · Módulo 3 · hace 2 h</span></div>
+        <button class="act-btn" onclick="alert('En la versión conectada se abrirá el hilo de la consulta.')">Responder</button></div>
+      <div class="data-row"><div class="dr-main"><b>No me carga el .pbix de ejemplo</b>
+        <span>Power BI · Módulo 6 · hace 1 día</span></div>
+        <button class="act-btn" onclick="alert('En la versión conectada se abrirá el hilo de la consulta.')">Responder</button></div>
+      <div class="data-row"><div class="dr-main"><b>¿Sirve ArcGIS Online con licencia de estudiante?</b>
+        <span>ArcGIS · Módulo 1 · hace 3 días</span></div>
+        <span class="pill pill-ok">Respondida</span></div></div>`;
+  } else {
+    const me=INSTRUCTORS[0];
+    evalBody=`<div class="form-card" style="max-width:640px"><h4>Mi perfil de instructor</h4>
+      <div class="fg"><label>Nombre</label><input value="${me.name}"></div>
+      <div class="fg"><label>Título / cargo</label><input value="${me.title}"></div>
+      <div class="fg"><label>Biografía pública</label><textarea rows="4">${me.bio}</textarea></div>
+      <div class="fg"><label>Especialidades (separadas por coma)</label><input value="${me.tags.join(', ')}"></div>
+      <button class="act-btn" onclick="alert('En la versión conectada: guardar en Firestore.')">Guardar perfil</button></div>`;
+  }
+
+  p.innerHTML=`<div class="page-head"><div class="eyebrow">Panel del instructor</div>
+      <h1>Hola, ${USER.name}</h1><p>Evaluá tareas, respondé consultas y mantené tu perfil público al día.</p></div>
+    <div class="stat-row">
+      <div class="stat-box"><b>${pending.length}</b><span>Tareas por evaluar</span></div>
+      <div class="stat-box"><b>${approved.length}</b><span>Tareas aprobadas</span></div>
+      <div class="stat-box"><b>${COURSES.length}</b><span>Cursos asignados</span></div>
+    </div>
+    <div class="tabs">
+      <button class="${instrTab==='eval'?'on':''}" onclick="setInstrTab('eval')">Evaluación de tareas</button>
+      <button class="${instrTab==='preguntas'?'on':''}" onclick="setInstrTab('preguntas')">Consultas</button>
+      <button class="${instrTab==='perfil'?'on':''}" onclick="setInstrTab('perfil')">Mi perfil</button>
+    </div>
+    ${evalBody}
+    <div class="footer">SoilTech · Soluciones Agronómicas</div>`;
+  show('instructorPanel');
+}
+function setInstrTab(t){instrTab=t;renderInstructorPanel();}
+function reviewFromPanel(cid,mi,decision){
+  const c=COURSES.find(x=>x.id===cid);c.modules[mi]._task=decision;
+  renderInstructorPanel();
+}
+
+/* --- panel del ADMIN (capacitaciones, alumnos, inscripciones) --- */
+let adminTab='cursos';
+function renderAdminPanel(){
+  const p=document.getElementById('adminPanel');
+  let body;
+  if(adminTab==='cursos'){
+    const rows=COURSES.map(c=>`<div class="data-row">
+        <div class="dr-main"><b>${c.title}</b><span>${c.cat} · ${c.modules.length} módulos · ${c.hours}</span></div>
+        <div class="row-actions">
+          <button class="act-btn ghost" onclick="alert('En la versión conectada: editor de módulos, temas, videos, materiales, tareas y cuestionarios.')">Editar contenido</button>
+        </div></div>`).join('');
+    body=`<div class="data-card"><div class="tbl-head">Capacitaciones publicadas (${COURSES.length})</div>${rows}</div>
+      <button class="act-btn" onclick="alert('En la versión conectada: asistente para crear una nueva capacitación.')">+ Nueva capacitación</button>`;
+  } else if(adminTab==='alumnos'){
+    const demo=[["María González","maria@mail.com","ArcGIS, QGIS"],["Carlos Benítez","carlos@mail.com","Power BI"],
+      ["Lucía Ramírez","lucia@mail.com","QGIS"],["José Areco","jose@mail.com","ArcGIS"]];
+    body=`<div class="data-card"><div class="tbl-head">Alumnos registrados (${demo.length})</div>
+      ${demo.map(d=>`<div class="data-row"><div class="dr-main"><b>${d[0]}</b><span>${d[1]} · Inscripto en: ${d[2]}</span></div>
+        <button class="act-btn ghost" onclick="alert('En la versión conectada: ver progreso del alumno.')">Ver progreso</button></div>`).join('')}</div>`;
+  } else {
+    const demo=[["María González","ArcGIS Pro & Online","Pagado","Activa"],["Carlos Benítez","Power BI","Pendiente","En espera"],
+      ["Lucía Ramírez","QGIS PROEZA","Pagado","Activa"]];
+    body=`<div class="data-card"><div class="tbl-head">Inscripciones (${demo.length})</div>
+      ${demo.map(d=>`<div class="data-row"><div class="dr-main"><b>${d[0]}</b><span>${d[1]}</span></div>
+        <div class="row-actions"><span class="pill ${d[2]==='Pagado'?'pill-ok':'pill-pend'}">${d[2]}</span>
+        <span class="pill ${d[3]==='Activa'?'pill-ok':'pill-rev'}">${d[3]}</span></div></div>`).join('')}</div>
+      <button class="act-btn" onclick="alert('En la versión conectada: registrar inscripción manual.')">+ Nueva inscripción</button>`;
+  }
+  p.innerHTML=`<div class="page-head"><div class="eyebrow">Panel de administración</div>
+      <h1>Gestión de SoilTech Academy</h1><p>Cargá y publicá capacitaciones, y gestioná alumnos e inscripciones.</p></div>
+    <div class="stat-row">
+      <div class="stat-box"><b>${COURSES.length}</b><span>Capacitaciones</span></div>
+      <div class="stat-box"><b>4</b><span>Alumnos</span></div>
+      <div class="stat-box"><b>3</b><span>Inscripciones</span></div>
+      <div class="stat-box"><b>${INSTRUCTORS.length}</b><span>Instructores</span></div>
+    </div>
+    <div class="tabs">
+      <button class="${adminTab==='cursos'?'on':''}" onclick="setAdminTab('cursos')">Capacitaciones</button>
+      <button class="${adminTab==='alumnos'?'on':''}" onclick="setAdminTab('alumnos')">Alumnos</button>
+      <button class="${adminTab==='inscripciones'?'on':''}" onclick="setAdminTab('inscripciones')">Inscripciones</button>
+    </div>
+    ${body}
+    <div class="footer">SoilTech · Soluciones Agronómicas</div>`;
+  show('adminPanel');
+}
+function setAdminTab(t){adminTab=t;renderAdminPanel();}
+
+
+</script>
+</body>
+</html>
