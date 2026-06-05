@@ -436,7 +436,7 @@
   };
 
   // ===== ENTREGAS de tareas (visibles para instructores) =====
-  // submissions/{autoId} -> { studentUid, studentName, courseId, moduleIdx, state, feedback, submittedAt }
+  // submissions/{autoId} -> { studentUid, studentName, courseId, moduleIdx, fileLink, state, feedback, submittedAt }
   window.fbSubmitTask = async (payload) => {
     // ¿ya existe una entrega para este alumno/curso/módulo? -> actualizar
     try{
@@ -448,7 +448,7 @@
       if(!found.empty){
         const id=found.docs[0].id;
         await updateDoc(doc(db,"submissions",id),
-          { state:"rev", feedback:"", submittedAt: serverTimestamp() });
+          { state:"rev", feedback:"", fileLink:payload.fileLink||"", submittedAt: serverTimestamp() });
         return id;
       }
       const ref = await addDoc(collection(db,"submissions"),
@@ -476,7 +476,7 @@
         where("studentUid","==",uid), where("courseId","==",courseId));
       const snap = await getDocs(q);
       const map={};
-      snap.docs.forEach(d=>{ const x=d.data(); map[x.moduleIdx]={state:x.state,feedback:x.feedback||""}; });
+      snap.docs.forEach(d=>{ const x=d.data(); map[x.moduleIdx]={state:x.state,feedback:x.feedback||"",fileLink:x.fileLink||""}; });
       return map;
     }catch(e){ console.warn('myTaskStates',e); return {}; }
   };
@@ -1031,7 +1031,7 @@ async function loadCourseState(c){
       if(prog.seen && Array.isArray(prog.seen[mi])) m._seen = m.temas.map((_,j)=>!!prog.seen[mi][j]);
       if(prog.quiz && prog.quiz[mi]!==undefined) m._quiz = prog.quiz[mi];
     }
-    if(tasks[mi]) { m._task = tasks[mi].state; m._feedback = tasks[mi].feedback||''; }
+    if(tasks[mi]) { m._task = tasks[mi].state; m._feedback = tasks[mi].feedback||''; m._fileLink = tasks[mi].fileLink||''; }
   });
 }
 function buildProgressPayload(c){
@@ -1075,11 +1075,19 @@ function renderDetail(){
 
     // tarea
     const [tcls,tlabel]=TASKPILL[m._task];
+    const entryBox=(idx,btnLabel)=>`
+      <div class="review-box" style="margin-top:10px">
+        <label style="display:block;font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Enlace de tu tarea</label>
+        <input id="tasklink-${idx}" placeholder="https://drive.google.com/..." style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13.5px;margin-bottom:6px">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Subí tu tarea en <b>PDF o Word</b> a Google Drive, compartila como "cualquiera con el enlace puede ver" y pegá acá la dirección.</p>
+        <p id="taskerr-${idx}" style="font-size:12.5px;color:var(--red);min-height:16px;margin-bottom:6px"></p>
+        <button class="act-btn" onclick="submitTask(${idx})">${btnLabel}</button>
+      </div>`;
     let taskActions='';
-    if(m._task==='pend') taskActions=`<button class="act-btn" onclick="submitTask(${i})">Entregar tarea</button>`;
-    else if(m._task==='rev') taskActions=`<span style="font-size:13px;color:var(--brown-soft)">⏳ Tu entrega está en revisión por un instructor de SoilTech Academy.</span>`;
-    else if(m._task==='no') taskActions=`<span style="font-size:13px;color:var(--red);display:block;margin-bottom:6px">✗ El instructor solicitó correcciones.</span>${m._feedback?`<div class="review-box" style="margin-bottom:10px"><b>Devolución:</b> ${m._feedback}</div>`:''}<button class="act-btn" onclick="submitTask(${i})">Volver a entregar</button>`;
-    else taskActions=`<span style="font-size:13px;color:var(--green);font-weight:600">✓ Tarea aprobada por el instructor</span>${m._feedback?`<div class="review-box" style="margin-top:10px"><b>Devolución:</b> ${m._feedback}</div>`:''}`;
+    if(m._task==='pend') taskActions=entryBox(i,'Entregar tarea');
+    else if(m._task==='rev') taskActions=`<span style="font-size:13px;color:var(--brown-soft);display:block;margin-bottom:8px">⏳ Tu entrega está en revisión por un instructor de SoilTech Academy.</span>${m._fileLink?`<a class="act-btn ghost" href="${m._fileLink}" target="_blank" rel="noopener">Ver mi entrega ↗</a>`:''}`;
+    else if(m._task==='no') taskActions=`<span style="font-size:13px;color:var(--red);display:block;margin-bottom:6px">✗ El instructor solicitó correcciones.</span>${m._feedback?`<div class="review-box" style="margin-bottom:10px"><b>Devolución:</b> ${m._feedback}</div>`:''}${entryBox(i,'Volver a entregar')}`;
+    else taskActions=`<span style="font-size:13px;color:var(--green);font-weight:600">✓ Tarea aprobada por el instructor</span>${m._feedback?`<div class="review-box" style="margin-top:10px"><b>Devolución:</b> ${m._feedback}</div>`:''}${m._fileLink?`<div style="margin-top:10px"><a class="act-btn ghost" href="${m._fileLink}" target="_blank" rel="noopener">Ver mi entrega ↗</a></div>`:''}`;
 
     // quiz — ahora se abre en página aparte
     const quizDone=m._quiz!==null;
@@ -1213,14 +1221,21 @@ function recalcAcc(i){const body=document.getElementById('body-'+i);if(body&&bod
 /* ---------- tarea ---------- */
 async function submitTask(i){
   const c=curCourse, m=c.modules[i];
-  m._task='rev'; refresh(i);
+  const inp=document.getElementById('tasklink-'+i);
+  const errEl=document.getElementById('taskerr-'+i);
+  const link=inp?inp.value.trim():'';
+  if(errEl) errEl.textContent='';
+  if(!link){ if(errEl) errEl.textContent='Pegá el enlace de tu tarea antes de entregar.'; return; }
+  if(!/^https?:\/\//i.test(link)){ if(errEl) errEl.textContent='El enlace debe empezar con http:// o https://'; return; }
+  const prev=m._task;
+  m._task='rev'; m._fileLink=link; refresh(i);
   try{
     await window.fbSubmitTask({
       studentUid:USER.uid, studentName:USER.name,
       courseId:c.id, courseTitle:c.title,
-      moduleIdx:i, moduleTitle:m.t
+      moduleIdx:i, moduleTitle:m.t, fileLink:link
     });
-  }catch(e){ alert('No se pudo enviar la entrega. Reintentá.'); m._task='pend'; refresh(i); }
+  }catch(e){ alert('No se pudo enviar la entrega. Reintentá.'); m._task=prev; refresh(i); }
 }
 
 /* ---------- quiz como página aparte ---------- */
@@ -1473,7 +1488,9 @@ async function renderInstructorPanel(){
           <span>${s.courseTitle||s.courseId} · entregada por ${s.studentName||'alumno'}</span>
           <div class="review-box">
             <div class="dr-sub" style="margin-bottom:8px"><b>Consigna:</b> ${consigna}</div>
-            <textarea id="fb-${s.id}" placeholder="Devolución para el alumno (opcional)"></textarea>
+            ${s.fileLink?`<a class="act-btn ghost" href="${s.fileLink}" target="_blank" rel="noopener" style="margin-bottom:10px;display:inline-block">📄 Abrir tarea del alumno ↗</a>`:'<p style="font-size:12.5px;color:var(--red);margin-bottom:10px">⚠ El alumno no adjuntó enlace.</p>'}
+            <textarea id="fb-${s.id}" placeholder="Devolución para el alumno (obligatoria si rechazás)"></textarea>
+            <p id="fberr-${s.id}" style="font-size:12px;color:var(--red);min-height:15px;margin:2px 0 6px"></p>
             <div class="row-actions">
               <button class="act-btn" onclick="reviewFromPanel('${s.id}','ok')">Aprobar</button>
               <button class="act-btn ghost" onclick="reviewFromPanel('${s.id}','no')">Rechazar</button>
@@ -1521,9 +1538,14 @@ function setInstrTab(t){instrTab=t;renderInstructorPanel();}
 async function reviewFromPanel(subId,decision){
   const fb=document.getElementById('fb-'+subId);
   const feedback=fb?fb.value.trim():'';
+  const errEl=document.getElementById('fberr-'+subId);
+  if(decision==='no' && !feedback){
+    if(errEl) errEl.textContent='Para rechazar, escribí la devolución indicando qué debe corregir el alumno.';
+    if(fb) fb.focus();
+    return;
+  }
   try{
     await window.fbReviewSubmission(subId, decision, feedback);
-    // actualizar cache local y re-render
     const s=SUBMISSIONS.find(x=>x.id===subId); if(s){s.state=decision;s.feedback=feedback;}
   }catch(e){ alert('No se pudo guardar la evaluación. Reintentá.'); return; }
   renderInstructorPanel();
