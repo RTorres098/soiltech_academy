@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carga de certificados · SoilTech Academy (admin)</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--green:#225235;--green-deep:#18403e;--green-darker:#0e2a28;--green-soft:#2f6b47;--gold:#a9842f;
+    --accent:#34A678;--ink:#1a1410;--muted:#6b6258;--line:rgba(34,82,53,.14);--soft:#f4f0e8;--red:#b3472f;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Outfit',sans-serif;background:var(--soft);color:var(--ink);padding:30px 18px;min-height:100vh}
+  h1,h2{font-family:'Fraunces',serif;color:var(--green-deep)}
+  .wrap{max-width:760px;margin:0 auto}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;box-shadow:0 4px 16px rgba(34,82,53,.06);margin-bottom:18px}
+  h1{font-size:26px;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  label{display:block;font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+  input{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:14px}
+  input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,166,120,.12)}
+  button{background:var(--green);color:#fff;border:none;padding:13px 22px;border-radius:10px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:.2s}
+  button:hover{background:var(--green-soft)} button:disabled{opacity:.6;cursor:default}
+  .ghost{background:transparent;color:var(--green);border:1px solid var(--line)}
+  .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--gold)}
+  td.code{font-family:monospace;color:var(--green-deep)}
+  .st{font-size:12px;padding:2px 8px;border-radius:20px}
+  .st-ok{background:rgba(52,166,120,.15);color:var(--green)}
+  .st-err{background:rgba(179,71,47,.12);color:var(--red)}
+  .st-wait{background:var(--soft);color:var(--muted)}
+  #log{font-size:13px;color:var(--muted);margin-top:12px;min-height:20px}
+  .warn{background:#fff6e6;border:1px solid var(--gold);border-radius:10px;padding:12px 14px;font-size:13px;color:#6b3a12;margin-bottom:18px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Carga de certificados — Power BI</h1>
+    <div class="sub">Herramienta de administración. Sube los 23 certificados a Firestore para que <b>verificar.html</b> los reconozca.</div>
+    <div class="warn">⚠ <b>Solo para administradores.</b> Necesitás iniciar sesión con una cuenta con rol <b>admin</b>. Esta página podés borrarla del repo después de usarla.</div>
+
+    <div id="authBox">
+      <label>Correo (admin)</label>
+      <input id="email" type="email" placeholder="tu-correo@...">
+      <label>Contraseña</label>
+      <input id="pass" type="password" placeholder="••••••••">
+      <button onclick="login()">Iniciar sesión</button>
+      <p id="autherr" style="color:var(--red);font-size:13px;margin-top:10px;min-height:16px"></p>
+    </div>
+
+    <div id="panel" style="display:none">
+      <label>Fecha de emisión (igual para todos)</label>
+      <input id="fecha" placeholder="ej.: 4 de junio de 2026">
+      <label>Capacitación</label>
+      <input id="curso" value="Capacitación en Power BI">
+      <label>Carga horaria</label>
+      <input id="horas" value="20 h">
+      <div class="row" style="margin-top:6px">
+        <button id="upBtn" onclick="subir()">Subir los 23 certificados</button>
+        <button class="ghost" onclick="logout()">Cerrar sesión</button>
+      </div>
+      <div id="log"></div>
+      <table id="tbl"><thead><tr><th>Código</th><th>Nombre</th><th>Estado</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyBrDGWcuej0C3ROUDSuVjnYc3Nsz8u4DfI",
+  authDomain: "soiltech-academy.firebaseapp.com",
+  projectId: "soiltech-academy",
+  storageBucket: "soiltech-academy.firebasestorage.app",
+  messagingSenderId: "152682364840",
+  appId: "1:152682364840:web:98603b614e69c1a0e5e79d"
+};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app), db=getFirestore(app);
+window.fbLogin=(e,p)=>signInWithEmailAndPassword(auth,e,p);
+window.fbLogout=()=>signOut(auth);
+window.fbCheckCert=async(code)=>{ const s=await getDoc(doc(db,"certificates",code)); return s.exists(); };
+window.fbPutCert=async(code,data)=>{ await setDoc(doc(db,"certificates",code),{...data,issuedAt:serverTimestamp()},{merge:true}); };
+onAuthStateChanged(auth,u=>{
+  document.getElementById('authBox').style.display = u?'none':'block';
+  document.getElementById('panel').style.display = u?'block':'none';
+});
+</script>
+<script>
+const CERTS=[
+  {code:"ST-PBI-2026-45CC", name:"Sofía Beatriz Almeida Estigarribia"},
+  {code:"ST-PBI-2026-34C6", name:"Araceli Nathaly Almada Miranda"},
+  {code:"ST-PBI-2026-0491", name:"María Luisa Balbuena Duarte"},
+  {code:"ST-PBI-2026-075A", name:"Sara Bernal Meza"},
+  {code:"ST-PBI-2026-CEB3", name:"Sebastián Brugada Grasso"},
+  {code:"ST-PBI-2026-36F3", name:"Rosalba Elena Canela"},
+  {code:"ST-PBI-2026-4F67", name:"Karem Elizeche Gómez"},
+  {code:"ST-PBI-2026-400E", name:"Angelo Elli Mendoza"},
+  {code:"ST-PBI-2026-88A7", name:"Walter Escobar Villalba"},
+  {code:"ST-PBI-2026-C4C4", name:"Karen Esquivel Ojeda"},
+  {code:"ST-PBI-2026-2B3E", name:"María Belén Fanego Silvera"},
+  {code:"ST-PBI-2026-DB95", name:"Olavi Gómez Prado"},
+  {code:"ST-PBI-2026-44A9", name:"America González Sanabria"},
+  {code:"ST-PBI-2026-F354", name:"Carim Assad Huespe Martínez"},
+  {code:"ST-PBI-2026-F032", name:"Raul Ibarrola Britez"},
+  {code:"ST-PBI-2026-0A85", name:"Tania Insfrán Chenu"},
+  {code:"ST-PBI-2026-D437", name:"Romina Iriarte Cañete"},
+  {code:"ST-PBI-2026-0725", name:"Carlos López Espínola"},
+  {code:"ST-PBI-2026-EBDD", name:"Ana Louteiro"},
+  {code:"ST-PBI-2026-41F3", name:"Luis Alfredo Moran Fariña"},
+  {code:"ST-PBI-2026-8975", name:"Andrea Prieto Peralta"},
+  {code:"ST-PBI-2026-9F4A", name:"Laura Reinoso Cáceres"},
+  {code:"ST-PBI-2026-00F3", name:"Shirley Zarate Vera"}
+];
+
+// pintar la tabla al cargar
+const tb=document.querySelector('#tbl tbody');
+CERTS.forEach(c=>{
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td class="code">${c.code}</td><td>${c.name}</td><td><span class="st st-wait" id="st-${c.code}">en espera</span></td>`;
+  tb.appendChild(tr);
+});
+
+async function login(){
+  const e=document.getElementById('email').value.trim();
+  const p=document.getElementById('pass').value;
+  const err=document.getElementById('autherr');err.textContent='';
+  try{ await window.fbLogin(e,p); }
+  catch(ex){ err.textContent='No se pudo iniciar sesión. Verificá correo y contraseña, y que la cuenta sea admin.'; }
+}
+async function logout(){ await window.fbLogout(); }
+
+async function subir(){
+  const fecha=document.getElementById('fecha').value.trim();
+  const curso=document.getElementById('curso').value.trim();
+  const horas=document.getElementById('horas').value.trim();
+  const log=document.getElementById('log');
+  const btn=document.getElementById('upBtn');
+  if(!fecha){ log.textContent='⚠ Cargá la fecha de emisión antes de subir.'; return; }
+  btn.disabled=true; let ok=0, err=0;
+  for(const c of CERTS){
+    const cell=document.getElementById('st-'+c.code);
+    try{
+      await window.fbPutCert(c.code,{
+        studentName:c.name, courseId:"powerbi", courseTitle:curso,
+        hours:horas, issueDate:fecha,
+        modules:["Fundamentos y Estructura de Datos","Conectividad y Gestión de Fuentes","ETL y Preparación con Power Query","Modelado de Datos Relacional","Cálculo Avanzado con DAX","Visualización e Interactividad"]
+      });
+      cell.className='st st-ok'; cell.textContent='✓ cargado'; ok++;
+    }catch(ex){ cell.className='st st-err'; cell.textContent='error'; err++; }
+    log.textContent=`Subidos: ${ok} · Errores: ${err} · de ${CERTS.length}`;
+  }
+  btn.disabled=false;
+  log.textContent=`Listo. ${ok} certificados cargados${err?`, ${err} con error`:''}. Ya podés verificarlos en verificar.html`;
+}
+window.login=login; window.logout=logout; window.subir=subir;
+</script>
+</body>
+</html>
