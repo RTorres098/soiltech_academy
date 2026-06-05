@@ -4,82 +4,189 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verificar certificado · SoilTech Academy</title>
-<meta name="description" content="Verificá la autenticidad de un certificado emitido por SoilTech Academy ingresando su código.">
+<meta name="description" content="Verificá la autenticidad de un certificado emitido por SoilTech Academy.">
+<meta property="og:title" content="Verificación de certificados · SoilTech Academy">
+<meta property="og:description" content="Confirmá la autenticidad de un certificado emitido por SoilTech Consultorías y Capacitaciones.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --green:#225235;--green-deep:#18403e;--green-darker:#0e2a28;--green-soft:#2f6b47;
-    --gold:#a9842f;--accent:#34A678;--accent-bright:#4DC491;--ink:#1a1410;--muted:#6b6258;
-    --line:rgba(34,82,53,.14);--soft:#f4f0e8;--red:#b3472f;
+    --gold:#a9842f;--gold-soft:#c9a24b;--brown:#472307;--accent:#34A678;--accent-bright:#4DC491;--accent-soft:#e8f3ee;
+    --ink:#1c1a17;--muted:#7a7268;--line:#e7e2d8;--bg:#fbfaf7;--card:#ffffff;--red:#a8442c;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Outfit',sans-serif;background:var(--soft);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh}
-  h1,h2,h3{font-family:'Fraunces',serif;color:var(--green-deep)}
-  a{color:inherit}
-  .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 30px;background:#fff;border-bottom:1px solid var(--line)}
-  .brand{display:flex;align-items:center;gap:12px}
-  .brand .mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--green),var(--green-darker));
-    display:grid;place-items:center;font-family:'Fraunces';font-weight:900;color:#fff;font-size:22px}
-  .brand b{font-family:'Fraunces';font-weight:900;font-size:19px;color:var(--green-deep)}
-  .brand span{display:block;font-size:9.5px;letter-spacing:3px;color:var(--gold);text-transform:uppercase}
-  .nav a{text-decoration:none;font-size:14px;color:var(--green);font-weight:600}
-  .wrap{max-width:620px;margin:0 auto;padding:60px 24px}
-  .head{text-align:center;margin-bottom:34px}
-  .head .ico{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--accent));
-    display:grid;place-items:center;font-size:30px;margin:0 auto 18px}
-  .head h1{font-size:30px;margin-bottom:8px}
-  .head p{color:var(--muted);font-size:15px;line-height:1.5}
-  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px;box-shadow:0 4px 16px rgba(34,82,53,.06)}
-  label{display:block;font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
-  .row{display:flex;gap:10px}
-  input{flex:1;padding:13px 15px;border:1px solid var(--line);border-radius:10px;font-family:monospace;font-size:15px;letter-spacing:1px;text-transform:uppercase}
-  input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,166,120,.12)}
-  button{background:var(--green);color:#fff;border:none;padding:13px 22px;border-radius:10px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:.2s}
-  button:hover{background:var(--green-soft)}
-  button:disabled{opacity:.6;cursor:default}
-  .hint{font-size:12.5px;color:var(--muted);margin-top:10px}
-  .result{margin-top:24px}
-  .res-card{border-radius:14px;padding:24px;border:1px solid var(--line)}
-  .res-ok{background:rgba(52,166,120,.08);border-color:rgba(52,166,120,.3)}
-  .res-no{background:rgba(179,71,47,.07);border-color:rgba(179,71,47,.3)}
-  .res-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-  .res-head .badge{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:24px;flex:none;color:#fff}
-  .res-ok .badge{background:var(--accent)}.res-no .badge{background:var(--red)}
-  .res-head b{font-size:18px;font-family:'Fraunces'}
-  .res-ok .res-head b{color:var(--green-deep)}.res-no .res-head b{color:var(--red)}
-  .field-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(34,82,53,.08);font-size:14px}
-  .field-row:last-child{border-bottom:none}
-  .field-row .k{color:var(--muted)}.field-row .v{font-weight:600;text-align:right}
-  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .foot{text-align:center;padding:30px;color:var(--muted);font-size:12.5px}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;
+    min-height:100vh;display:flex;flex-direction:column}
+  a{color:inherit;text-decoration:none}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid var(--line);background:var(--card)}
+  .nav .logo{height:36px;width:auto}
+  .nav .home{font-size:13.5px;color:var(--muted);display:flex;align-items:center;gap:6px;transition:color .2s}
+  .nav .home:hover{color:var(--green)}
+  .nav .home svg{width:15px;height:15px}
+  /* HERO */
+  .hero{position:relative;overflow:hidden;color:#fff;text-align:center;padding:62px 24px 56px;
+    background:radial-gradient(900px 380px at 50% -20%, rgba(52,166,120,.28), transparent 65%),
+               linear-gradient(165deg,var(--green) 0%,var(--green-deep) 58%,var(--green-darker) 100%)}
+  .hero::after{content:"";position:absolute;inset:0;opacity:.5;
+    background-image:url(FONDO.JPG);background-size:cover;background-position:center;filter:grayscale(1) brightness(0.6);z-index:0}
+  .hero>*{position:relative;z-index:1}
+  .hero .seal{width:58px;height:58px;border:1.5px solid rgba(255,255,255,.35);border-radius:50%;display:grid;place-items:center;margin:0 auto 22px;color:var(--accent-bright)}
+  .hero .seal svg{width:28px;height:28px}
+  .hero .eyebrow{font-size:18px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent-bright);margin-bottom:14px}
+  .hero h1{font-size:45px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px;line-height:1.12}
+  .hero p{color:rgba(255,255,255,.82);font-size:15px;line-height:1.6;max-width:460px;margin:0 auto}
+  .hero p b{color:#fff;font-weight:600}
+  @media(max-width:560px){.hero{padding:48px 20px 44px}.hero h1{font-size:26px}}
+  /* PANEL */
+  .wrap{flex:1;max-width:560px;width:100%;margin:32px auto 0;padding:0 24px 48px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px;box-shadow:0 12px 40px rgba(34,82,53,.1)}
+  .lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:9px;display:block}
+  .field{display:flex;gap:10px}
+  .field input{flex:1;padding:13px 15px;border:1px solid var(--line);border-radius:10px;font-family:'Inter';font-size:15px;
+    letter-spacing:.04em;color:var(--ink);background:var(--bg);transition:border-color .2s,box-shadow .2s}
+  .field input::placeholder{color:#b8b0a4;letter-spacing:.02em}
+  .field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,166,120,.1);background:var(--card)}
+  .gbtn{position:relative;overflow:hidden;border:none;cursor:pointer;border-radius:10px;padding:13px 22px;
+    font-family:'Inter';font-weight:600;font-size:14.5px;background:var(--green);color:#fff;
+    transition:background .25s;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+  .gbtn:hover{background:var(--green-soft)}
+  .gbtn:disabled{opacity:.55;cursor:default}
+  .gbtn .glow{position:absolute;width:160px;height:160px;border-radius:50%;pointer-events:none;
+    transform:translate(-50%,-50%) scale(0);transition:transform .35s ease-out;opacity:.55;
+    background:radial-gradient(circle, rgba(169,132,47,.55) 8%, rgba(52,166,120,.25) 40%, transparent 70%);z-index:0}
+  .gbtn:hover .glow{transform:translate(-50%,-50%) scale(1)}
+  .gbtn .lbl-in{position:relative;z-index:1;display:inline-flex;align-items:center;gap:8px}
+  .gbtn svg{width:16px;height:16px}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.5}
+  .result{margin-top:22px}
+  .rcard{border:1px solid var(--line);border-radius:14px;overflow:hidden;animation:rise .4s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .rtop{display:flex;align-items:center;gap:13px;padding:20px 24px;border-bottom:1px solid var(--line)}
+  .rtop .ic{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none}
+  .rtop .ic svg{width:21px;height:21px}
+  .ok .rtop .ic{background:var(--accent-soft);color:var(--green)}
+  .ok .rtop{background:linear-gradient(0deg,rgba(52,166,120,.04),transparent)}
+  .no .rtop .ic{background:#f7ece8;color:var(--red)}
+  .rtop b{font-size:16px;font-weight:600;letter-spacing:-.01em}
+  .ok .rtop b{color:var(--green-deep)} .no .rtop b{color:var(--red)}
+  .rtop span{display:block;font-size:12.5px;color:var(--muted);font-weight:400;margin-top:1px}
+  .rbody{padding:22px 24px}
+  .frow{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .frow:last-of-type{border-bottom:none}
+  .frow .k{color:var(--muted)} .frow .v{font-weight:600;text-align:right;color:var(--ink)}
+  .frow .v.mono{letter-spacing:.05em}
+  .mods{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+  .mods .mlbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  .mods .mi{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:#3c362e;padding:4px 0}
+  .mods .mi svg{width:15px;height:15px;color:var(--accent);flex:none;margin-top:2px}
+  .share{margin-top:18px;padding-top:18px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .share .gbtn{background:var(--card);color:var(--green);border:1px solid var(--line)}
+  .share .gbtn:hover{background:var(--bg);border-color:var(--accent)}
+  .share .gbtn .glow{background:radial-gradient(circle, rgba(52,166,120,.3) 10%, transparent 70%)}
+  .copied{font-size:12.5px;color:var(--green);opacity:0;transition:opacity .2s}
+  .copied.on{opacity:1}
+  .spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  /* FOOTER (réplica soiltechpy.com) */
+  footer{background:var(--green-darker);color:rgba(255,255,255,.78);margin-top:40px}
+  footer .container{max-width:1080px;margin:0 auto;padding:52px 32px 0}
+  .footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:40px;padding-bottom:40px}
+  .footer-brand img{height:42px;width:auto;margin-bottom:16px;filter:brightness(0) invert(1)}
+  .footer-brand p{font-size:13.5px;line-height:1.65;color:rgba(255,255,255,.7);max-width:320px}
+  .footer-col h5{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-soft);margin-bottom:16px}
+  .footer-col ul{list-style:none}
+  .footer-col li{margin-bottom:11px}
+  .footer-col a{font-size:13.5px;color:rgba(255,255,255,.78);display:inline-flex;align-items:center;gap:9px;transition:color .2s}
+  .footer-col a:hover{color:#fff}
+  .footer-col a svg{width:15px;height:15px;flex:none;color:var(--accent-bright)}
+  .social-links{display:flex;gap:10px}
+  .social-btn{width:38px;height:38px;border-radius:9px;border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;transition:.2s}
+  .social-btn:hover{background:var(--accent);border-color:var(--accent)}
+  .social-btn svg{width:17px;height:17px;color:#fff}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,.12);padding:20px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .footer-bottom p{font-size:12.5px;color:rgba(255,255,255,.6)}
+  .footer-dev{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
+  .footer-dev span:first-child{font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.05em}
+  .footer-dev span:last-child{font-size:13px;font-weight:700;color:var(--accent-bright);letter-spacing:.08em}
+  @media(max-width:760px){.footer-grid{grid-template-columns:1fr;gap:30px}.footer-bottom{justify-content:center;text-align:center}.footer-dev{align-items:center}}
 </style>
 </head>
 <body>
 <div class="nav">
-  <a class="brand" href="index.html" style="text-decoration:none"><div class="mark">S</div><div><b>SoilTech</b><span>Academy</span></div></a>
-  <a href="index.html">← Volver al inicio</a>
+  <a href="index.html"><img class="logo" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJDYXBhXzIiIGRhdGEtbmFtZT0iQ2FwYSAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0ODAuMjIgMTcyLjQzIj48ZGVmcz48c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBsZXR0ZXItc3BhY2luZzogLjczZW07CiAgICAgIH0KCiAgICAgIC5jbHMtMyB7CiAgICAgICAgbGV0dGVyLXNwYWNpbmc6IC43ZW07CiAgICAgIH0KCiAgICAgIC5jbHMtNCB7CiAgICAgICAgZmlsbDogbm9uZTsKICAgICAgICBzdHJva2U6ICNhOTg0MmY7CiAgICAgICAgc3Ryb2tlLWxpbmVjYXA6IHJvdW5kOwogICAgICAgIHN0cm9rZS1taXRlcmxpbWl0OiAxMDsKICAgICAgICBzdHJva2Utd2lkdGg6IC41cHg7CiAgICAgIH0KCiAgICAgIC5jbHMtNSB7CiAgICAgICAgZmlsbDogI2E5ODQyZjsKICAgICAgICBmb250LWZhbWlseTogSW50ZXJJdGFsaWMtQm9sZEl0YWxpYywgSW50ZXI7CiAgICAgICAgZm9udC1zaXplOiA0OHB4OwogICAgICAgIGZvbnQtc3R5bGU6IGl0YWxpYzsKICAgICAgICBmb250LXZhcmlhdGlvbi1zZXR0aW5nczogJ29wc3onIDE0LCAnd2dodCcgNzAwOwogICAgICAgIGZvbnQtd2VpZ2h0OiA3MDA7CiAgICAgIH0KCiAgICAgIC5jbHMtNiB7CiAgICAgICAgZmlsbDogIzE4NDAzZTsKICAgICAgfQoKICAgICAgLmNscy03IHsKICAgICAgICBmaWxsOiAjNDcyMzA3OwogICAgICB9CgogICAgICAuY2xzLTggewogICAgICAgIGxldHRlci1zcGFjaW5nOiAuNjllbTsKICAgICAgfQogICAgPC9zdHlsZT48L2RlZnM+PGcgaWQ9IkNhcGFfMi0yIiBkYXRhLW5hbWU9IkNhcGEgMiI+PGcgaWQ9InV1aWQtZWUxMDBhYzYtMzQwOS00MWJlLTg2MTItMzJkMDdiYzQ4NTZiIiBkYXRhLW5hbWU9IkNhcGEgMi0yIj48Zz48Zz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0zNy44Miw5Ni41NWMtMjIuMTUsMC0zNS44MS0xMC42MS0zNy40Ny0yOS4wOWwtLjM1LTMuODhoMjMuNTRsLjU2LDIuODdjMS4zNSw2Ljg0LDYuMjYsMTAuNzcsMTMuNDcsMTAuNzcsNC43NCwwLDkuODUtMi4xMSw5Ljg1LTYuNzYsMC0zLjU5LTEuMDYtNy4zNC0xMy42My0xMC4zLTE1LjYtMy43Ni0zMC4wMi05LjgtMzAuMDItMjguMzdDMy43NywxNS44NCwxNy41OSw0LjI3LDM2LjYzLDQuMjdzMzEuNTQsMTAuNTIsMzMuNzgsMjguODdsLjQ5LDMuOTloLTIzLjkybC0uMzYtMy4xNmMtLjgtNi45OC00LjI2LTEwLjM3LTEwLjU4LTEwLjM3LTMuNjIsMC03Ljk1LDEuMDgtNy45NSw2LjE3LDAsMy42NiwxLjA4LDYuNzIsMTQuNyw5Ljk0LDE5LjM5LDQuNDcsMjguODMsMTMuOTgsMjguODMsMjkuMDgsMCw4LjM0LTMuNzMsMTUuNjktMTAuNTEsMjAuNzQtNi4wOSw0LjUyLTE0LjM2LDcuMDItMjMuMyw3LjAyaC4wMVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xMDYuOTcsOTYuNTVjLTExLjA2LDAtMjAuMzQtMy42NS0yNi44My0xMC41Ni02LjE5LTYuNTktOS40Ni0xNS42NC05LjQ2LTI2LjIsMC0yMi4zNCwxNC4yNS0zNi43NywzNi4yOS0zNi43N3MzNi4yOSwxNC40NCwzNi4yOSwzNi43N2MwLDEwLjU2LTMuMjcsMTkuNjItOS40NiwyNi4yLTYuNSw2LjkxLTE1Ljc4LDEwLjU2LTI2LjgzLDEwLjU2aC4wMS0uMDFaTTEwNi45Nyw0MS42NGMtMTEuMDMsMC0xMi4yMiwxMi42OS0xMi4yMiwxOC4xNXMxLjIsMTguMTUsMTIuMjIsMTguMTUsMTIuMjItMTIuNjksMTIuMjItMTguMTUtMS4yLTE4LjE1LTEyLjIyLTE4LjE1WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE0Ni44Myw5NC44OVYyNC42OGg2LjUzYy00LjUtMS43OC03LjM2LTUuOTMtNy4zNi0xMS4yNywwLTcuMDgsNS4yOS0xMi4yMiwxMi41Ny0xMi4yMnMxMi41Nyw1LjE0LDEyLjU3LDEyLjIyYzAsNS4zNC0yLjg1LDkuNDktNy4zNiwxMS4yN2g2LjUzdjcwLjIxaC0yMy40OSwwWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE5NS4yMiw5NS43MmMtMTMuNTQsMC0xNi43Ni03Ljg2LTE3LjA3LTE0LjQ4LS4yNS0yLjk3LS4yNS02LS4yNS0xMC4xOVYuNmgyMy40OXY3MC4xYzAsMi4zOCwwLDMuOTcuMTEsNS40OC4wMy4yOC4wNy40Ni4xLjU4LjI1LjA3Ljc5LjE3LDEuODYuMTcuNDcsMCwxLjAyLS4wMiwxLjYzLS4wNmwzLjc4LS4yNHYxOC4yNGwtMy4xNi4zNWMtMy4wOS4zNS02LjMyLjQ5LTEwLjQ4LjQ5aDBaIi8+PHBvbHlnb24gY2xhc3M9ImNscy0xIiBwb2ludHM9IjIzNC40OCA5NC44OSAyMzQuNDggMjUuODYgMjA2LjcyIDI1Ljg2IDIwNi43MiA1Ljk0IDI4NS43MSA1Ljk0IDI4NS43MSAyNS44NiAyNTcuOTYgMjUuODYgMjU3Ljk2IDk0Ljg5IDIzNC40OCA5NC44OSIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTMwOC42MSw5Ni41NWMtOS44NywwLTE4LjI5LTMuMTgtMjQuMzYtOS4yLTYuNDktNi40My05LjkyLTE1Ljg4LTkuOTItMjcuMzMsMC0yMS43OSwxNC42NC0zNy4wMSwzNS41OC0zNy4wMSwxMC4xOCwwLDE4LjcyLDMuNzEsMjQuNzMsMTAuNzUsNS40LDYuMzMsOC4zNiwxNS4xMSw4LjM2LDI0LjcxLDAsMS42MiwwLDMuNjMtLjI2LDUuOTdsLS4zMiwyLjgxaC40OGwtLjk0LDQuMzJjLTMuNDEsMTUuNjQtMTUuODgsMjQuOTgtMzMuMzcsMjQuOThoLjAyWk0yOTguNDIsNjcuNjFjMS43Miw5LjA1LDYuNDUsMTAuMzIsMTAuNTQsMTAuMzIsNS4zNiwwLDguODgtMi44LDkuNjUtNy42N2wuNDItMi42NWgtMjAuNjIuMDFaTTMxOC4zOSw0OS44MmMtMS44My03LjI1LTYuMDEtOC4xOS05LjE4LTguMTktMS45OSwwLTcuNTEsMC05Ljk3LDguMTloMTkuMTYtLjAxWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTM3Ni41Nyw5Ni41NWMtOS43NywwLTE4LjA4LTMuMTktMjQuMDUtOS4yNC02LjMxLTYuNC05LjY0LTE1Ljc0LTkuNjQtMjcuMDVzMy41Ny0yMC43LDEwLjMyLTI3LjQ2YzYuMzEtNi4zMSwxNS4xMS05Ljc5LDI0Ljc4LTkuNzksMTcuOTUsMCwzMC45NiwxMS4xMywzMi4zNywyNy42OWwuMzMsMy44NmgtMjMuMDFsLS41LTIuOTdjLTEuNDktOC44My01Ljg4LTkuOTYtOS41NC05Ljk2LTkuMjksMC0xMC42OCwxMS0xMC42OCwxNy41NSwwLDguNTUsMS44MywxOC43NCwxMC41NiwxOC43NCw0LjkyLDAsOC4wNi0zLjA4LDkuMzItOS4xNWwuNTktMi44M2gyMy41bC0uNzMsNC4xN2MtMi45LDE2LjU1LTE1LjQ4LDI2LjQzLTMzLjYzLDI2LjQzaC4wMXMwLC4wMSwwLC4wMVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik00NTYuNjMsOTQuODl2LTM2Ljg5YzAtMi41NiwwLTUuNDQtLjIzLTguNTEtLjM5LTUuNDMtMy4wMi03Ljg2LTguNTUtNy44Ni05LjI4LjE0LTEwLjY4LDEzLjE0LTEwLjY4LDIwLjg3djMyLjM3aC0yMy40OVYwaDIzLjQ5djI3LjU0YzQuNy0zLjEyLDkuODQtNC41MiwxNi40OC00LjUyLDE0LjkzLDAsMjQuMzksNy41OCwyNS45NSwyMC44MS4zNywzLjI4LjQ5LDYuNS40OSwxMS45MnYzOS4xNGgtMjMuNDkuMDMsMFoiLz48L2c+PGc+PGc+PHBhdGggY2xhc3M9ImNscy03IiBkPSJNNjYuODgsMzMuNTdoLTE2LjczYy0uOTUtOC4zMS01LjU3LTEzLjUyLTE0LjExLTEzLjUyLTYuNTMsMC0xMS41MSwzLjA4LTExLjUxLDkuNzNzNC4zOCwxMC4zMiwxNy40MywxMy40YzE4LjAzLDQuMTUsMjYuMDksMTIuNDUsMjYuMDksMjUuNjIsMCwxNS40Mi0xNC4xMSwyNC4yLTMwLjI0LDI0LjItMTkuNTcsMC0zMi4zOC04LjY2LTMzLjkyLTI1Ljg2aDE2LjczYzEuNzgsOS4wMSw4LjY2LDEzLjY0LDE2Ljk3LDEzLjY0LDcuNDgsMCwxMy40LTQuMDQsMTMuNC0xMC4zMiwwLTYuODgtNC4yNy0xMC45MS0xNi4zNi0xMy43Ni0xNi43My00LjA0LTI3LjI4LTkuODUtMjcuMjgtMjQuOTFTMjAuOTksNy44MywzNi42NCw3LjgzYzE5LjU3LDAsMjguNDcsMTEuMTUsMzAuMjQsMjUuNzRoMFoiLz48cGF0aCBjbGFzcz0iY2xzLTciIGQ9Ik0xMzkuNzEsNTkuNzljMCwxOS4xLTExLjc0LDMzLjIxLTMyLjc0LDMzLjIxcy0zMi43NC0xNC4xMS0zMi43NC0zMy4yMSwxMS43NC0zMy4yMSwzMi43NC0zMy4yMSwzMi43NCwxMy45OSwzMi43NCwzMy4yMVpNMTIyLjc1LDU5Ljc5YzAtMTMuNjQtNS45My0yMS43MS0xNS43OC0yMS43MXMtMTUuNzgsOC4wNy0xNS43OCwyMS43MSw1LjkzLDIxLjcxLDE1Ljc4LDIxLjcxLDE1Ljc4LTguMTksMTUuNzgtMjEuNzFaIi8+PHBhdGggY2xhc3M9ImNscy03IiBkPSJNMTY3LjU4LDEzLjQxYzAsNS4yMi0zLjY4LDguNjYtOS4wMSw4LjY2cy05LjAxLTMuNDQtOS4wMS04LjY2LDMuNjgtOC42Niw5LjAxLTguNjYsOS4wMSwzLjU2LDkuMDEsOC42NlpNMTUwLjM4LDkxLjM0VjI4LjI0aDE2LjM2djYzLjFoLTE2LjM2WiIvPjxwYXRoIGNsYXNzPSJjbHMtNyIgZD0iTTE5Ny44Myw3MC43YzAsMi40OSwwLDQuMTUuMTIsNS44MS4zNiwzLjIsMS43OCw0LjI3LDcuMzYsMy45MnYxMS4yN2MtMy4yLjM2LTYuNDEuNDctMTAuMDguNDctOC4wNywwLTEzLjE2LTIuOTctMTMuNTItMTEuMTUtLjI0LTIuODUtLjI0LTUuODEtLjI0LTkuOTZWNC4xN2gxNi4zNnY2Ni41NGgwWiIvPjwvZz48Zz48cGF0aCBjbGFzcz0iY2xzLTYiIGQ9Ik0yNTQuNCwyMi4zMXY2OS4wM2gtMTYuMzZWMjIuMzFoLTI3Ljc2di0xMi44MWg3MS44OHYxMi44MWgtMjcuNzYsMFoiLz48cGF0aCBjbGFzcz0iY2xzLTYiIGQ9Ik0zMzkuMjEsNjQuMDZoLTQ0Ljg0YzEuMDcsMTMuMjgsNywxNy40MywxNC41OSwxNy40Myw3LDAsMTIuMS0zLjkyLDEzLjE2LTEwLjY4aDE2LjM2Yy0zLjIsMTQuNzEtMTUuMDYsMjIuMTgtMjkuODksMjIuMTgtMTcuMzEsMC0zMC43Mi0xMC43OS0zMC43Mi0zMi45OCwwLTE5LjM0LDEyLjY5LTMzLjQ1LDMyLjAzLTMzLjQ1czI5LjUzLDE0LjcxLDI5LjUzLDMxLjkxYzAsMS41NCwwLDMuNDQtLjI0LDUuNTdoMGwuMDIuMDJoMFpNMjk0Ljg1LDUzLjM4aDI3Ljc2Yy0xLjA3LTkuOTYtNS41Ny0xNS4zLTEzLjQtMTUuM3MtMTIuOTMsNC44Ni0xNC4zNSwxNS4zaC0uMDFaIi8+PHBhdGggY2xhc3M9ImNscy02IiBkPSJNNDA2LjgxLDUxLjAxaC0xNi4xM2MtMS41NC05LjEzLTYuMjktMTIuOTMtMTMuMDUtMTIuOTMtOC4zMSwwLTE0LjIzLDYuNzYtMTQuMjMsMjEuMTEsMCwxNS42Niw1LjkzLDIyLjMsMTQuMTEsMjIuMyw2LjQxLDAsMTEuMTUtNC4wNCwxMi44MS0xMS45OGgxNi4zNmMtMi43MywxNS41NC0xNC4zNSwyMy40OS0zMC4xMiwyMy40OS0xNy4xOSwwLTMwLjEyLTEwLjkxLTMwLjEyLTMyLjc0czE0LjIzLTMzLjY4LDMxLjU1LTMzLjY4LDI3LjY0LDEwLjQ0LDI4LjgzLDI0LjQzYzAsMC0uMDEsMC0uMDEsMFoiLz48cGF0aCBjbGFzcz0iY2xzLTYiIGQ9Ik00NzYuNTYsNTUuNzV2MzUuNThoLTE2LjM2di0zMy4zM2MwLTIuNjEsMC01LjU3LS4yNC04Ljc4LS40Ny02LjY0LTQuMTYtMTEuMTUtMTIuMS0xMS4xNS03Ljk1LjEyLTE0LjIzLDYuODgtMTQuMjMsMjQuNDN2MjguODNoLTE2LjM2VjMuNTVoMTYuMzZ2MzQuODdsNC44Ni03LjQ4YzQuNS0zLjIsOS4xMy00LjM4LDE1LjE4LTQuMzgsMTMuNCwwLDIxLjExLDYuNjQsMjIuNDIsMTcuNjcuMzYsMy4yLjQ3LDYuNDEuNDcsMTEuNTFoMFoiLz48L2c+PC9nPjwvZz48L2c+PHRleHQgY2xhc3M9ImNscy01IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMi4yMiAxNTYuOTYpIj48dHNwYW4gY2xhc3M9ImNscy04IiB4PSIwIiB5PSIwIj5BPC90c3Bhbj48dHNwYW4gY2xhc3M9ImNscy0zIiB4PSI2OC44MSIgeT0iMCI+QzwvdHNwYW4+PHRzcGFuIGNsYXNzPSJjbHMtMiIgeD0iMTM4IiB5PSIwIj5BREVNWTwvdHNwYW4+PC90ZXh0PjxsaW5lIGNsYXNzPSJjbHMtNCIgeDE9IjEyLjU5IiB5MT0iMTA4LjAzIiB4Mj0iNDcyLjM0IiB5Mj0iMTA4LjAzIi8+PC9nPjwvc3ZnPg==" alt="SoilTech Academy"></a>
+  <a class="home" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Inicio
+  </a>
+</div>
+
+<div class="hero">
+  <div class="seal">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+  </div>
+  <div class="eyebrow">SoilTech Academy</div>
+  <h1>Verificación de certificados</h1>
+  <p>Ingresá el código que figura al pie del certificado para confirmar su autenticidad. Ejemplo: <b>ST-PBI-2026-45CC</b></p>
 </div>
 
 <div class="wrap">
-  <div class="head">
-    <div class="ico">🔎</div>
-    <h1>Verificar certificado</h1>
-    <p>Ingresá el código del certificado (por ejemplo <b>ST-ARC-2026-A7F3</b>) para confirmar su autenticidad.</p>
-  </div>
-  <div class="card">
-    <label for="code">Código del certificado</label>
-    <div class="row">
-      <input id="code" placeholder="ST-XXX-2026-XXXX" onkeydown="if(event.key==='Enter')verify()">
-      <button id="btn" onclick="verify()">Verificar</button>
+  <div class="panel">
+    <label class="lbl" for="code">Código del certificado</label>
+    <div class="field">
+      <input id="code" placeholder="ST-XXX-2026-XXXX" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')verify()">
+      <button class="gbtn" id="btn" onclick="verify()" aria-label="Verificar certificado">
+        <span class="glow" id="glow"></span>
+        <span class="lbl-in" id="btnlbl">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          Verificar
+        </span>
+      </button>
     </div>
-    <p class="hint">El código figura al pie del certificado, junto a "Cert. No."</p>
-    <div class="result" id="result"></div>
+    <p class="hint">El código identifica de forma única a cada certificado emitido por SoilTech Academy.</p>
+    <div class="result" id="result" aria-live="polite"></div>
   </div>
 </div>
-<div class="foot">SoilTech · Soluciones Agronómicas — Consultoría y Capacitaciones · soiltechpy.com</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJDYXBhXzIiIGRhdGEtbmFtZT0iQ2FwYSAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0ODAuMjIgMTcyLjQzIj48ZGVmcz48c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBsZXR0ZXItc3BhY2luZzogLjczZW07CiAgICAgIH0KCiAgICAgIC5jbHMtMyB7CiAgICAgICAgbGV0dGVyLXNwYWNpbmc6IC43ZW07CiAgICAgIH0KCiAgICAgIC5jbHMtNCB7CiAgICAgICAgZmlsbDogbm9uZTsKICAgICAgICBzdHJva2U6ICNhOTg0MmY7CiAgICAgICAgc3Ryb2tlLWxpbmVjYXA6IHJvdW5kOwogICAgICAgIHN0cm9rZS1taXRlcmxpbWl0OiAxMDsKICAgICAgICBzdHJva2Utd2lkdGg6IC41cHg7CiAgICAgIH0KCiAgICAgIC5jbHMtNSB7CiAgICAgICAgZmlsbDogI2E5ODQyZjsKICAgICAgICBmb250LWZhbWlseTogSW50ZXJJdGFsaWMtQm9sZEl0YWxpYywgSW50ZXI7CiAgICAgICAgZm9udC1zaXplOiA0OHB4OwogICAgICAgIGZvbnQtc3R5bGU6IGl0YWxpYzsKICAgICAgICBmb250LXZhcmlhdGlvbi1zZXR0aW5nczogJ29wc3onIDE0LCAnd2dodCcgNzAwOwogICAgICAgIGZvbnQtd2VpZ2h0OiA3MDA7CiAgICAgIH0KCiAgICAgIC5jbHMtNiB7CiAgICAgICAgZmlsbDogIzE4NDAzZTsKICAgICAgfQoKICAgICAgLmNscy03IHsKICAgICAgICBmaWxsOiAjNDcyMzA3OwogICAgICB9CgogICAgICAuY2xzLTggewogICAgICAgIGxldHRlci1zcGFjaW5nOiAuNjllbTsKICAgICAgfQogICAgPC9zdHlsZT48L2RlZnM+PGcgaWQ9IkNhcGFfMi0yIiBkYXRhLW5hbWU9IkNhcGEgMiI+PGcgaWQ9InV1aWQtZWUxMDBhYzYtMzQwOS00MWJlLTg2MTItMzJkMDdiYzQ4NTZiIiBkYXRhLW5hbWU9IkNhcGEgMi0yIj48Zz48Zz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0zNy44Miw5Ni41NWMtMjIuMTUsMC0zNS44MS0xMC42MS0zNy40Ny0yOS4wOWwtLjM1LTMuODhoMjMuNTRsLjU2LDIuODdjMS4zNSw2Ljg0LDYuMjYsMTAuNzcsMTMuNDcsMTAuNzcsNC43NCwwLDkuODUtMi4xMSw5Ljg1LTYuNzYsMC0zLjU5LTEuMDYtNy4zNC0xMy42My0xMC4zLTE1LjYtMy43Ni0zMC4wMi05LjgtMzAuMDItMjguMzdDMy43NywxNS44NCwxNy41OSw0LjI3LDM2LjYzLDQuMjdzMzEuNTQsMTAuNTIsMzMuNzgsMjguODdsLjQ5LDMuOTloLTIzLjkybC0uMzYtMy4xNmMtLjgtNi45OC00LjI2LTEwLjM3LTEwLjU4LTEwLjM3LTMuNjIsMC03Ljk1LDEuMDgtNy45NSw2LjE3LDAsMy42NiwxLjA4LDYuNzIsMTQuNyw5Ljk0LDE5LjM5LDQuNDcsMjguODMsMTMuOTgsMjguODMsMjkuMDgsMCw4LjM0LTMuNzMsMTUuNjktMTAuNTEsMjAuNzQtNi4wOSw0LjUyLTE0LjM2LDcuMDItMjMuMyw3LjAyaC4wMVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0xMDYuOTcsOTYuNTVjLTExLjA2LDAtMjAuMzQtMy42NS0yNi44My0xMC41Ni02LjE5LTYuNTktOS40Ni0xNS42NC05LjQ2LTI2LjIsMC0yMi4zNCwxNC4yNS0zNi43NywzNi4yOS0zNi43N3MzNi4yOSwxNC40NCwzNi4yOSwzNi43N2MwLDEwLjU2LTMuMjcsMTkuNjItOS40NiwyNi4yLTYuNSw2LjkxLTE1Ljc4LDEwLjU2LTI2LjgzLDEwLjU2aC4wMS0uMDFaTTEwNi45Nyw0MS42NGMtMTEuMDMsMC0xMi4yMiwxMi42OS0xMi4yMiwxOC4xNXMxLjIsMTguMTUsMTIuMjIsMTguMTUsMTIuMjItMTIuNjksMTIuMjItMTguMTUtMS4yLTE4LjE1LTEyLjIyLTE4LjE1WiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE0Ni44Myw5NC44OVYyNC42OGg2LjUzYy00LjUtMS43OC03LjM2LTUuOTMtNy4zNi0xMS4yNywwLTcuMDgsNS4yOS0xMi4yMiwxMi41Ny0xMi4yMnMxMi41Nyw1LjE0LDEyLjU3LDEyLjIyYzAsNS4zNC0yLjg1LDkuNDktNy4zNiwxMS4yN2g2LjUzdjcwLjIxaC0yMy40OSwwWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTE5NS4yMiw5NS43MmMtMTMuNTQsMC0xNi43Ni03Ljg2LTE3LjA3LTE0LjQ4LS4yNS0yLjk3LS4yNS02LS4yNS0xMC4xOVYuNmgyMy40OXY3MC4xYzAsMi4zOCwwLDMuOTcuMTEsNS40OC4wMy4yOC4wNy40Ni4xLjU4LjI1LjA3Ljc5LjE3LDEuODYuMTcuNDcsMCwxLjAyLS4wMiwxLjYzLS4wNmwzLjc4LS4yNHYxOC4yNGwtMy4xNi4zNWMtMy4wOS4zNS02LjMyLjQ5LTEwLjQ4LjQ5aDBaIi8+PHBvbHlnb24gY2xhc3M9ImNscy0xIiBwb2ludHM9IjIzNC40OCA5NC44OSAyMzQuNDggMjUuODYgMjA2LjcyIDI1Ljg2IDIwNi43MiA1Ljk0IDI4NS43MSA1Ljk0IDI4NS43MSAyNS44NiAyNTcuOTYgMjUuODYgMjU3Ljk2IDk0Ljg5IDIzNC40OCA5NC44OSIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTMwOC42MSw5Ni41NWMtOS44NywwLTE4LjI5LTMuMTgtMjQuMzYtOS4yLTYuNDktNi40My05LjkyLTE1Ljg4LTkuOTItMjcuMzMsMC0yMS43OSwxNC42NC0zNy4wMSwzNS41OC0zNy4wMSwxMC4xOCwwLDE4LjcyLDMuNzEsMjQuNzMsMTAuNzUsNS40LDYuMzMsOC4zNiwxNS4xMSw4LjM2LDI0LjcxLDAsMS42MiwwLDMuNjMtLjI2LDUuOTdsLS4zMiwyLjgxaC40OGwtLjk0LDQuMzJjLTMuNDEsMTUuNjQtMTUuODgsMjQuOTgtMzMuMzcsMjQuOThoLjAyWk0yOTguNDIsNjcuNjFjMS43Miw5LjA1LDYuNDUsMTAuMzIsMTAuNTQsMTAuMzIsNS4zNiwwLDguODgtMi44LDkuNjUtNy42N2wuNDItMi42NWgtMjAuNjIuMDFaTTMxOC4zOSw0OS44MmMtMS44My03LjI1LTYuMDEtOC4xOS05LjE4LTguMTktMS45OSwwLTcuNTEsMC05Ljk3LDguMTloMTkuMTYtLjAxWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTM3Ni41Nyw5Ni41NWMtOS43NywwLTE4LjA4LTMuMTktMjQuMDUtOS4yNC02LjMxLTYuNC05LjY0LTE1Ljc0LTkuNjQtMjcuMDVzMy41Ny0yMC43LDEwLjMyLTI3LjQ2YzYuMzEtNi4zMSwxNS4xMS05Ljc5LDI0Ljc4LTkuNzksMTcuOTUsMCwzMC45NiwxMS4xMywzMi4zNywyNy42OWwuMzMsMy44NmgtMjMuMDFsLS41LTIuOTdjLTEuNDktOC44My01Ljg4LTkuOTYtOS41NC05Ljk2LTkuMjksMC0xMC42OCwxMS0xMC42OCwxNy41NSwwLDguNTUsMS44MywxOC43NCwxMC41NiwxOC43NCw0LjkyLDAsOC4wNi0zLjA4LDkuMzItOS4xNWwuNTktMi44M2gyMy41bC0uNzMsNC4xN2MtMi45LDE2LjU1LTE1LjQ4LDI2LjQzLTMzLjYzLDI2LjQzaC4wMXMwLC4wMSwwLC4wMVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik00NTYuNjMsOTQuODl2LTM2Ljg5YzAtMi41NiwwLTUuNDQtLjIzLTguNTEtLjM5LTUuNDMtMy4wMi03Ljg2LTguNTUtNy44Ni05LjI4LjE0LTEwLjY4LDEzLjE0LTEwLjY4LDIwLjg3djMyLjM3aC0yMy40OVYwaDIzLjQ5djI3LjU0YzQuNy0zLjEyLDkuODQtNC41MiwxNi40OC00LjUyLDE0LjkzLDAsMjQuMzksNy41OCwyNS45NSwyMC44MS4zNywzLjI4LjQ5LDYuNS40OSwxMS45MnYzOS4xNGgtMjMuNDkuMDMsMFoiLz48L2c+PGc+PGc+PHBhdGggY2xhc3M9ImNscy03IiBkPSJNNjYuODgsMzMuNTdoLTE2LjczYy0uOTUtOC4zMS01LjU3LTEzLjUyLTE0LjExLTEzLjUyLTYuNTMsMC0xMS41MSwzLjA4LTExLjUxLDkuNzNzNC4zOCwxMC4zMiwxNy40MywxMy40YzE4LjAzLDQuMTUsMjYuMDksMTIuNDUsMjYuMDksMjUuNjIsMCwxNS40Mi0xNC4xMSwyNC4yLTMwLjI0LDI0LjItMTkuNTcsMC0zMi4zOC04LjY2LTMzLjkyLTI1Ljg2aDE2LjczYzEuNzgsOS4wMSw4LjY2LDEzLjY0LDE2Ljk3LDEzLjY0LDcuNDgsMCwxMy40LTQuMDQsMTMuNC0xMC4zMiwwLTYuODgtNC4yNy0xMC45MS0xNi4zNi0xMy43Ni0xNi43My00LjA0LTI3LjI4LTkuODUtMjcuMjgtMjQuOTFTMjAuOTksNy44MywzNi42NCw3LjgzYzE5LjU3LDAsMjguNDcsMTEuMTUsMzAuMjQsMjUuNzRoMFoiLz48cGF0aCBjbGFzcz0iY2xzLTciIGQ9Ik0xMzkuNzEsNTkuNzljMCwxOS4xLTExLjc0LDMzLjIxLTMyLjc0LDMzLjIxcy0zMi43NC0xNC4xMS0zMi43NC0zMy4yMSwxMS43NC0zMy4yMSwzMi43NC0zMy4yMSwzMi43NCwxMy45OSwzMi43NCwzMy4yMVpNMTIyLjc1LDU5Ljc5YzAtMTMuNjQtNS45My0yMS43MS0xNS43OC0yMS43MXMtMTUuNzgsOC4wNy0xNS43OCwyMS43MSw1LjkzLDIxLjcxLDE1Ljc4LDIxLjcxLDE1Ljc4LTguMTksMTUuNzgtMjEuNzFaIi8+PHBhdGggY2xhc3M9ImNscy03IiBkPSJNMTY3LjU4LDEzLjQxYzAsNS4yMi0zLjY4LDguNjYtOS4wMSw4LjY2cy05LjAxLTMuNDQtOS4wMS04LjY2LDMuNjgtOC42Niw5LjAxLTguNjYsOS4wMSwzLjU2LDkuMDEsOC42NlpNMTUwLjM4LDkxLjM0VjI4LjI0aDE2LjM2djYzLjFoLTE2LjM2WiIvPjxwYXRoIGNsYXNzPSJjbHMtNyIgZD0iTTE5Ny44Myw3MC43YzAsMi40OSwwLDQuMTUuMTIsNS44MS4zNiwzLjIsMS43OCw0LjI3LDcuMzYsMy45MnYxMS4yN2MtMy4yLjM2LTYuNDEuNDctMTAuMDguNDctOC4wNywwLTEzLjE2LTIuOTctMTMuNTItMTEuMTUtLjI0LTIuODUtLjI0LTUuODEtLjI0LTkuOTZWNC4xN2gxNi4zNnY2Ni41NGgwWiIvPjwvZz48Zz48cGF0aCBjbGFzcz0iY2xzLTYiIGQ9Ik0yNTQuNCwyMi4zMXY2OS4wM2gtMTYuMzZWMjIuMzFoLTI3Ljc2di0xMi44MWg3MS44OHYxMi44MWgtMjcuNzYsMFoiLz48cGF0aCBjbGFzcz0iY2xzLTYiIGQ9Ik0zMzkuMjEsNjQuMDZoLTQ0Ljg0YzEuMDcsMTMuMjgsNywxNy40MywxNC41OSwxNy40Myw3LDAsMTIuMS0zLjkyLDEzLjE2LTEwLjY4aDE2LjM2Yy0zLjIsMTQuNzEtMTUuMDYsMjIuMTgtMjkuODksMjIuMTgtMTcuMzEsMC0zMC43Mi0xMC43OS0zMC43Mi0zMi45OCwwLTE5LjM0LDEyLjY5LTMzLjQ1LDMyLjAzLTMzLjQ1czI5LjUzLDE0LjcxLDI5LjUzLDMxLjkxYzAsMS41NCwwLDMuNDQtLjI0LDUuNTdoMGwuMDIuMDJoMFpNMjk0Ljg1LDUzLjM4aDI3Ljc2Yy0xLjA3LTkuOTYtNS41Ny0xNS4zLTEzLjQtMTUuM3MtMTIuOTMsNC44Ni0xNC4zNSwxNS4zaC0uMDFaIi8+PHBhdGggY2xhc3M9ImNscy02IiBkPSJNNDA2LjgxLDUxLjAxaC0xNi4xM2MtMS41NC05LjEzLTYuMjktMTIuOTMtMTMuMDUtMTIuOTMtOC4zMSwwLTE0LjIzLDYuNzYtMTQuMjMsMjEuMTEsMCwxNS42Niw1LjkzLDIyLjMsMTQuMTEsMjIuMyw2LjQxLDAsMTEuMTUtNC4wNCwxMi44MS0xMS45OGgxNi4zNmMtMi43MywxNS41NC0xNC4zNSwyMy40OS0zMC4xMiwyMy40OS0xNy4xOSwwLTMwLjEyLTEwLjkxLTMwLjEyLTMyLjc0czE0LjIzLTMzLjY4LDMxLjU1LTMzLjY4LDI3LjY0LDEwLjQ0LDI4LjgzLDI0LjQzYzAsMC0uMDEsMC0uMDEsMFoiLz48cGF0aCBjbGFzcz0iY2xzLTYiIGQ9Ik00NzYuNTYsNTUuNzV2MzUuNThoLTE2LjM2di0zMy4zM2MwLTIuNjEsMC01LjU3LS4yNC04Ljc4LS40Ny02LjY0LTQuMTYtMTEuMTUtMTIuMS0xMS4xNS03Ljk1LjEyLTE0LjIzLDYuODgtMTQuMjMsMjQuNDN2MjguODNoLTE2LjM2VjMuNTVoMTYuMzZ2MzQuODdsNC44Ni03LjQ4YzQuNS0zLjIsOS4xMy00LjM4LDE1LjE4LTQuMzgsMTMuNCwwLDIxLjExLDYuNjQsMjIuNDIsMTcuNjcuMzYsMy4yLjQ3LDYuNDEuNDcsMTEuNTFoMFoiLz48L2c+PC9nPjwvZz48L2c+PHRleHQgY2xhc3M9ImNscy01IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMi4yMiAxNTYuOTYpIj48dHNwYW4gY2xhc3M9ImNscy04IiB4PSIwIiB5PSIwIj5BPC90c3Bhbj48dHNwYW4gY2xhc3M9ImNscy0zIiB4PSI2OC44MSIgeT0iMCI+QzwvdHNwYW4+PHRzcGFuIGNsYXNzPSJjbHMtMiIgeD0iMTM4IiB5PSIwIj5BREVNWTwvdHNwYW4+PC90ZXh0PjxsaW5lIGNsYXNzPSJjbHMtNCIgeDE9IjEyLjU5IiB5MT0iMTA4LjAzIiB4Mj0iNDcyLjM0IiB5Mj0iMTA4LjAzIi8+PC9nPjwvc3ZnPg==" alt="SoilTech">
+        <p>Consultorías y Capacitaciones.<br>Especialistas en Suelos, SIG y Teledetección para el sector agrícola, forestal y ganadero.</p>
+      </div>
+      <div class="footer-col">
+        <h5>SoilTech Academy</h5>
+        <ul>
+          <li><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Inicio</a></li>
+          <li><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Capacitaciones</a></li>
+          <li><a href="campus.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg> Acceder al campus</a></li>
+          <li><a href="verificar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg> Verificar certificado</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contacto Directo</h5>
+        <ul>
+          <li><a href="https://wa.me/595982369083" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.38 8.38 0 0 1-4-1L3 20l1-5.5a8.38 8.38 0 0 1-1-4A8.5 8.5 0 0 1 21 11.5z"/></svg> +595 982 369 083</a></li>
+          <li><a href="mailto:admin@soiltechpy.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg> admin@soiltechpy.com</a></li>
+          <li><a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> San Lorenzo, Paraguay</a></li>
+        </ul>
+        <h5 style="margin-top:22px">Comunidad</h5>
+        <div class="social-links">
+          <a href="https://www.instagram.com/py.soiltech/" target="_blank" rel="noopener" class="social-btn" aria-label="Instagram"><img src="INSTAGRAM.svg"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="https://www.facebook.com/py.soiltech/" target="_blank" rel="noopener" class="social-btn" aria-label="Facebook"><img src="FACEBOOK.svg"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+          <a href="https://www.linkedin.com/company/soiltechpy/?viewAsMember=true" target="_blank" rel="noopener" class="social-btn" aria-label="LinkedIn"><img src="LINKEDIN.svg"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 SoilTech Paraguay · Todos los derechos reservados</p>
+      <a href="#" class="footer-dev"><span>Desarrollado por</span><span>SOCIALTECH</span></a>
+    </div>
+  </div>
+</footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
@@ -99,42 +206,51 @@ window.fbVerify = async (code) => {
 };
 </script>
 <script>
-function esc(s){return (s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
+function esc(s){return (s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+const btn=document.getElementById('btn'), glow=document.getElementById('glow');
+btn.addEventListener('mousemove',e=>{const r=btn.getBoundingClientRect();glow.style.left=(e.clientX-r.left)+'px';glow.style.top=(e.clientY-r.top)+'px';});
+const ICON_CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+const ICON_X='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+const ICON_DOT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>';
+const ICON_COPY='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
 async function verify(){
   const raw=document.getElementById('code').value.trim().toUpperCase();
   const out=document.getElementById('result');
-  const btn=document.getElementById('btn');
+  const btnlbl=document.getElementById('btnlbl');
   if(!raw){ out.innerHTML=''; return; }
-  if(!window.fbVerify){ out.innerHTML='<p style="color:var(--red);margin-top:18px">No se pudo cargar la conexión. Recargá la página.</p>'; return; }
-  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
+  if(!window.fbVerify){ out.innerHTML='<p style="color:var(--red);margin-top:18px;font-size:14px">No se pudo cargar la conexión. Recargá la página.</p>'; return; }
+  btn.disabled=true; btnlbl.innerHTML='<span class="spin"></span> Verificando';
   let data=null, err=false;
   try{ data=await window.fbVerify(raw); }catch(e){ err=true; }
-  btn.disabled=false; btn.textContent='Verificar';
-
+  btn.disabled=false; btnlbl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Verificar';
   if(err){
-    out.innerHTML=`<div class="res-card res-no"><div class="res-head"><div class="badge">!</div><b>No se pudo verificar</b></div>
-      <p style="font-size:14px;color:var(--muted)">Hubo un problema de conexión. Intentá de nuevo en unos segundos.</p></div>`;
+    out.innerHTML='<div class="rcard no"><div class="rtop"><div class="ic">'+ICON_X+'</div><div><b>No se pudo verificar</b><span>Problema de conexión, intentá de nuevo</span></div></div></div>';
     return;
   }
   if(!data){
-    out.innerHTML=`<div class="res-card res-no"><div class="res-head"><div class="badge">✕</div><b>Certificado no encontrado</b></div>
-      <p style="font-size:14px;color:#4a443c">No existe ningún certificado con el código <b>${esc(raw)}</b>. Verificá que esté bien escrito (incluí los guiones).</p></div>`;
+    out.innerHTML='<div class="rcard no"><div class="rtop"><div class="ic">'+ICON_X+'</div><div><b>Certificado no encontrado</b><span>El código no corresponde a ningún certificado</span></div></div>'
+      +'<div class="rbody"><p style="font-size:13.5px;color:#4a443c;line-height:1.55">No existe un certificado con el código <b>'+esc(raw)+'</b>. Verificá que esté completo e incluya los guiones.</p></div></div>';
     return;
   }
-  const mods=(data.modules||[]).map(m=>`<div style="font-size:13px;color:#3c362e;padding:4px 0">• ${esc(m)}</div>`).join('');
-  out.innerHTML=`<div class="res-card res-ok">
-    <div class="res-head"><div class="badge">✓</div><b>Certificado válido</b></div>
-    <div class="field-row"><span class="k">Otorgado a</span><span class="v">${esc(data.studentName)}</span></div>
-    <div class="field-row"><span class="k">Capacitación</span><span class="v">${esc(data.courseTitle)}</span></div>
-    <div class="field-row"><span class="k">Carga horaria</span><span class="v">${esc(data.hours||'—')}</span></div>
-    <div class="field-row"><span class="k">Fecha de emisión</span><span class="v">${esc(data.issueDate||'—')}</span></div>
-    <div class="field-row"><span class="k">Código</span><span class="v" style="font-family:monospace">${esc(raw)}</span></div>
-    ${mods?`<div style="margin-top:14px"><div style="font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Módulos completados</div>${mods}</div>`:''}
-    <p style="font-size:12.5px;color:var(--muted);margin-top:16px">Emitido por SoilTech Academy.</p>
-  </div>`;
+  const mods=(data.modules||[]).map(m=>'<div class="mi">'+ICON_DOT+'<span>'+esc(m)+'</span></div>').join('');
+  out.innerHTML='<div class="rcard ok"><div class="rtop"><div class="ic">'+ICON_CHECK+'</div><div><b>Certificado válido</b><span>Emitido por SoilTech Academy</span></div></div>'
+    +'<div class="rbody">'
+    +'<div class="frow"><span class="k">Otorgado a</span><span class="v">'+esc(data.studentName)+'</span></div>'
+    +'<div class="frow"><span class="k">Capacitación</span><span class="v">'+esc(data.courseTitle)+'</span></div>'
+    +'<div class="frow"><span class="k">Carga horaria</span><span class="v">'+esc(data.hours||'—')+'</span></div>'
+    +'<div class="frow"><span class="k">Fecha de emisión</span><span class="v">'+esc(data.issueDate||'—')+'</span></div>'
+    +'<div class="frow"><span class="k">Código</span><span class="v mono">'+esc(raw)+'</span></div>'
+    +(mods?'<div class="mods"><div class="mlbl">Módulos completados</div>'+mods+'</div>':'')
+    +'<div class="share"><button class="gbtn" onclick="copyLink(\''+esc(raw)+'\')"><span class="glow"></span><span class="lbl-in">'+ICON_COPY+'Copiar enlace de verificación</span></button><span class="copied" id="copied">Enlace copiado</span></div>'
+    +'</div></div>';
 }
-window.verify=verify;
-// permitir ?code=XXX para verificación directa por QR/enlace
+function copyLink(code){
+  const url=location.origin+location.pathname+'?code='+encodeURIComponent(code);
+  const done=()=>{const c=document.getElementById('copied');if(c){c.classList.add('on');setTimeout(()=>c.classList.remove('on'),2200);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done).catch(()=>prompt('Copiá el enlace:',url)); }
+  else { prompt('Copiá el enlace:',url); }
+}
+window.verify=verify; window.copyLink=copyLink;
 const pre=new URLSearchParams(location.search).get('code');
 if(pre){ document.getElementById('code').value=pre; verify(); }
 </script>
