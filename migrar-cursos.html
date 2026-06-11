@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Migrar cursos a Firebase · Herramienta admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#fbfaf7;color:#1c1a17;padding:40px 20px;line-height:1.6}
+  .wrap{max-width:680px;margin:0 auto;background:#fff;border:1px solid #e7e2d8;border-radius:14px;padding:32px}
+  h1{font-size:24px;color:#18403e;margin-bottom:8px}
+  .warn{background:#fff3e0;border:1px solid #f0c674;border-radius:10px;padding:14px 16px;font-size:14px;margin:18px 0;color:#7a5a00}
+  button{font-family:'Inter';font-weight:700;font-size:15px;background:#225235;color:#fff;border:none;border-radius:10px;padding:14px 28px;cursor:pointer;margin-top:10px}
+  button:hover{background:#2f6b47}
+  button:disabled{opacity:.5;cursor:default}
+  #log{margin-top:22px;font-size:13.5px;font-family:monospace;background:#0e2a28;color:#9fe3c0;border-radius:10px;padding:16px;max-height:340px;overflow:auto;white-space:pre-wrap;display:none}
+  .ok{color:#4DC491}.err{color:#ff8a7a}
+  .step{font-size:14px;color:#7a7268;margin:6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Migrar cursos a Firebase</h1>
+  <p class="step">Esta herramienta sube los cursos que hoy están en el código a la colección <b>courses</b> de Firestore. Es de un solo uso.</p>
+  <div class="warn">
+    <b>Antes de correr:</b> tenés que estar logueado como admin en el campus (en otra pestaña) para que las reglas de Firestore te permitan escribir. Esta herramienta sobrescribe los documentos de la colección <b>courses</b> con el contenido actual del código.
+  </div>
+  <button id="btn" onclick="run()">Subir los cursos a Firebase</button>
+  <div id="log"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyBrDGWcuej0C3ROUDSuVjnYc3Nsz8u4DfI",
+  authDomain: "soiltech-academy.firebaseapp.com",
+  projectId: "soiltech-academy",
+  storageBucket: "soiltech-academy.firebasestorage.app",
+  messagingSenderId: "152682364840",
+  appId: "1:152682364840:web:98603b614e69c1a0e5e79d"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+window._fbReady=false;
+onAuthStateChanged(auth, u => { window._user=u; });
+window.fbSaveCourse = async (course) => {
+  // guarda el curso completo (un documento por curso). orden incluido.
+  await setDoc(doc(db,"courses",course.id), { ...course, updatedAt: serverTimestamp() }, { merge:false });
+};
+window._fbReady=true;
+</script>
+<script>
+const COURSES = [
+  {
+    id:"arcgis", cat:"SIG · ArcGIS Pro & Online", title:"Capacitación en SIG — ArcGIS Pro & Online",
+    glyph:"◆", color:"linear-gradient(135deg,#225235,#0e2a28)",
+    desc:"Especialización práctica en gestión territorial y visualización avanzada para el sector agroforestal. 25 horas certificadas.",
+    hours:"25 h",
+    incluye:["Licencia Advanced 3 meses","Certificación de 25 horas","Datasets de práctica","Soporte del instructor"],
+    modules:[
+      { t:"Fundamentos de los SIG y Ecosistema ESRI", tipo:"teoria",
+        obj:"Comprender la arquitectura de ArcGIS y preparar el entorno de trabajo híbrido (Desktop–Cloud).",
+        temas:[
+          "Introducción a la ciencia de los datos geográficos: geodesia y coordenadas",
+          "Interfaz de ArcGIS Pro: cintas, paneles, catálogo y proyectos (.aprx)",
+          "Conectividad con ArcGIS Online: licenciamiento y \"Organización\"",
+          "Datos Online: Biblioteca Esri y conexiones STAC" ],
+        mats:[{n:"Guía de instalación ArcGIS Pro.pdf",s:"1.4 MB",i:"📕"},{n:"Atajos de teclado ArcGIS.pdf",s:"320 KB",i:"📄"}],
+        tarea:"Instalar ArcGIS Pro, iniciar sesión con la cuenta de organización y crear un proyecto .aprx con una conexión a la Biblioteca Esri. Subir captura del proyecto abierto.",
+        quiz:[
+          {q:"¿Qué extensión tiene un proyecto de ArcGIS Pro?", o:[".mxd",".aprx",".qgz",".shp"], a:1},
+          {q:"ArcGIS Online corresponde al componente…", o:["Escritorio","Nube","Servidor local","Base de datos"], a:1},
+          {q:"Una conexión STAC permite acceder a…", o:["Catálogos de imágenes satelitales","Hojas de cálculo","Impresoras","Macros"], a:0} ]
+      },
+      { t:"Gestión y Edición de Datos Geográficos", tipo:"practica",
+        obj:"Crear y administrar bases de datos espaciales con integridad de datos.",
+        temas:[
+          "Geodatabase: creación, reglas de atributos, dominios y subtipos",
+          "Creación de datos vectoriales: puntos, líneas y polígonos",
+          "Edición avanzada: digitalización y topología de geodatabase",
+          "Importar y exportar: Excel, KML y Shapefiles" ],
+        mats:[{n:"Datos_practica.gdb.zip",s:"4.2 MB",i:"🗺️"},{n:"Guía edición vectorial.pdf",s:"1.1 MB",i:"📕"}],
+        tarea:"Crear una geodatabase con un dominio de valores y digitalizar al menos 10 parcelas como polígonos con topología validada. Exportar la capa a Shapefile y entregar el .gdb comprimido.",
+        quiz:[
+          {q:"Un dominio en una geodatabase sirve para…", o:["Acelerar el dibujo","Restringir los valores de un campo","Cambiar la proyección","Crear etiquetas"], a:1},
+          {q:"La topología de geodatabase ayuda a…", o:["Corregir errores de superposición","Aumentar la resolución","Comprimir archivos","Exportar a PDF"], a:0},
+          {q:"¿Cuál NO es un tipo de geometría vectorial?", o:["Punto","Línea","Polígono","Píxel"], a:3} ]
+      },
+      { t:"Análisis Espacial y Geoprocesamiento", tipo:"practica",
+        obj:"Resolver problemas territoriales mediante herramientas de análisis vectorial y ráster.",
+        temas:[
+          "Análisis vectorial: proximidad (Buffer) y extracción",
+          "Superposición: Intersect y Union",
+          "ModelBuilder: automatización de flujos sin programar" ],
+        mats:[{n:"Manual_geoprocesamiento.pdf",s:"2.3 MB",i:"📕"}],
+        tarea:"Construir un modelo en ModelBuilder que genere un buffer de 1 km sobre una capa de puntos y lo intersecte con los distritos. Entregar el modelo y el resultado.",
+        quiz:[
+          {q:"La herramienta Buffer genera…", o:["Una zona de influencia","Una tabla dinámica","Un histograma","Una etiqueta"], a:0},
+          {q:"ModelBuilder permite…", o:["Editar fotos","Automatizar geoprocesos visualmente","Crear cuentas","Instalar plugins"], a:1},
+          {q:"Intersect combina dos capas devolviendo…", o:["La parte común","Todo el área","Solo la primera capa","Nada"], a:0} ]
+      },
+      { t:"Visualización Cartográfica y Simbología", tipo:"practica",
+        obj:"Comunicar información compleja a través de mapas estéticos y técnicamente correctos.",
+        temas:[
+          "Simbologías: tipos y clasificación por valores únicos",
+          "Etiquetado dinámico con expresiones Arcade",
+          "Estilos: crear y administrar STYLX",
+          "Diseño de Layouts: leyendas, textos dinámicos y exportación (.pagx)" ],
+        mats:[{n:"Plantilla_layout.pagx",s:"180 KB",i:"📄"},{n:"Guía simbología y Arcade.pdf",s:"1.3 MB",i:"📕"}],
+        tarea:"Diseñar un layout tamaño A3 con simbología por valores únicos, etiquetas con Arcade, leyenda y escala. Exportar a PDF y entregarlo.",
+        quiz:[
+          {q:"Arcade se usa para…", o:["Expresiones de etiquetado","Comprimir capas","Editar tablas","Crear geodatabases"], a:0},
+          {q:"La extensión .pagx corresponde a…", o:["Un archivo de diseño/layout","Una imagen","Un ráster","Un script"], a:0},
+          {q:"Clasificar por valores únicos asigna un símbolo según…", o:["Cada categoría distinta","El tamaño del archivo","La fecha","El orden alfabético"], a:0} ]
+      },
+      { t:"Del Escritorio al Trabajo en la Nube", tipo:"practica",
+        obj:"Publicar contenido y configurar aplicaciones web interactivas.",
+        temas:[
+          "Publicación de capas: Web Layer y Web Map",
+          "Map Viewer: pop-ups y Smart Mapping",
+          "Actualización de capas online alojadas",
+          "Field Maps: formularios para edición en campo" ],
+        mats:[{n:"Checklist_publicacion_nube.pdf",s:"540 KB",i:"📄"}],
+        tarea:"Publicar una Web Map en ArcGIS Online con pop-ups configurados y un formulario de Field Maps. Compartir el enlace del visor.",
+        quiz:[
+          {q:"Un Web Map se aloja en…", o:["ArcGIS Online","El disco local","Un USB","Excel"], a:0},
+          {q:"Field Maps sirve para…", o:["Editar datos en campo","Imprimir mapas","Crear macros","Hacer backups"], a:0},
+          {q:"Smart Mapping ayuda a…", o:["Sugerir simbología inteligente","Borrar capas","Cifrar datos","Convertir a CAD"], a:0} ]
+      },
+      { t:"Aplicaciones de Campo y Tableros", tipo:"practica",
+        obj:"Desplegar soluciones para la toma de datos en tiempo real y monitoreo.",
+        temas:[
+          "ArcGIS Survey123: formularios e informes PDF automáticos",
+          "ArcGIS Dashboards: tableros y gráficos dinámicos",
+          "Actualización de capas en campo vía app móvil",
+          "ArcGIS StoryMaps: narrativa geoespacial" ],
+        mats:[{n:"Guía Survey123 + Dashboards.pdf",s:"1.8 MB",i:"📕"},{n:"Plantilla_StoryMap.pdf",s:"720 KB",i:"📄"}],
+        tarea:"Crear una encuesta en Survey123, capturar 5 registros de prueba y mostrarlos en un Dashboard. Entregar el enlace del tablero.",
+        quiz:[
+          {q:"Survey123 se especializa en…", o:["Formularios de captura","Edición ráster","Impresión 3D","Modelado de redes"], a:0},
+          {q:"Un Dashboard muestra…", o:["Indicadores y mapas en tiempo real","Solo texto","Hojas de Excel","Correos"], a:0},
+          {q:"StoryMaps combina mapas con…", o:["Narrativa y multimedia","Solo tablas","Comandos SQL","Código Python"], a:0} ]
+      }
+    ]
+  },
+  {
+    id:"qgis", cat:"SIG · QGIS (Proyecto PROEZA / FAO)", title:"Manejo de QGIS para captura y presentación de datos",
+    glyph:"◈", color:"linear-gradient(135deg,#2f6b47,#18403e)",
+    desc:"Digitalización en campo, edición de capas vectoriales y cartografía con QGIS, sobre datos reales del Proyecto PROEZA.",
+    hours:"30 h",
+    incluye:["Materiales audiovisuales prácticos","Soporte posterior","Certificado de participación","Datasets del Proyecto PROEZA"],
+    modules:[
+      { t:"Módulo 1 — Fundamentos SIG e importación de datos", tipo:"practica",
+        obj:"Conocer los conceptos básicos de los SIG y dar los primeros pasos en QGIS importando datos tabulares del Proyecto PROEZA.",
+        temas:[
+          "Preparación del entorno: estructura de carpetas y nomenclatura",
+          "¿Qué es un SIG? e interfaz de QGIS",
+          "Carga de capa vectorial, navegación y tabla de atributos",
+          "Simbología categorizada y graduada, etiquetado",
+          "Importar Excel como capa de puntos y vincular tablas (Join)" ],
+        mats:[{n:"Guia_Dia1_CURSO_QGIS_2026.pdf",s:"2.1 MB",i:"📕"},{n:"Datos de viviendas.xlsx",s:"95 KB",i:"📊"},{n:"Informacion del participante.xlsx",s:"120 KB",i:"📊"}],
+        tarea:"Crear la estructura de carpetas oficial, cargar las viviendas desde Excel como capa de puntos y aplicar simbología categorizada por comunidad. Entregar captura del proyecto.",
+        quiz:[
+          {q:"Para crear una capa de puntos desde Excel se necesitan campos de…", o:["Latitud y longitud","Color","Fecha","Nombre"], a:0},
+          {q:"Un Join (común) vincula tablas usando…", o:["Un campo en común (ID)","La ubicación","El color","El tamaño"], a:0},
+          {q:"La simbología categorizada asigna símbolos según…", o:["Una categoría de un campo","El orden de carga","La resolución","El SRC"], a:0} ]
+      },
+      { t:"Módulo 2 — Creación de capas, digitalización y consultas", tipo:"practica",
+        obj:"Entender los procedimientos para crear y editar datos espaciales, y consultar la tabla de atributos.",
+        temas:[
+          "Crear capa de puntos desde Excel y vincular tablas",
+          "Instalar plugin QuickMapServices (mapas base)",
+          "Crear shapefile de polígonos (Fincas) y digitalizar",
+          "Tabla de atributos: edición, campos y calculadora de campos",
+          "Selección por expresión y formularios de atributos" ],
+        mats:[{n:"Guia_Dia2_CURSO_QGIS_2026.pdf",s:"2.4 MB",i:"📕"},{n:"Informacion de parcelas.xlsx",s:"110 KB",i:"📊"}],
+        tarea:"Digitalizar 5 fincas como polígonos sobre el mapa base satelital, calcular su superficie con la calculadora de campos y configurar un formulario con listas desplegables. Entregar el shapefile.",
+        quiz:[
+          {q:"QuickMapServices sirve para…", o:["Agregar mapas base","Calcular áreas","Exportar PDF","Crear etiquetas"], a:0},
+          {q:"La calculadora de campos permite…", o:["Calcular geometría y valores","Cambiar el idioma","Instalar plugins","Imprimir"], a:0},
+          {q:"Un formulario con lista desplegable ayuda a…", o:["Estandarizar la captura de datos","Acelerar el zoom","Comprimir la capa","Cambiar el SRC"], a:0} ]
+      },
+      { t:"Módulo 3 — Análisis espacial y geoprocesos", tipo:"practica",
+        obj:"Realizar análisis espacial para construir un mapa de cobertura territorial del Proyecto PROEZA.",
+        temas:[
+          "Reproyectar capas a UTM 21S (EPSG:32721)",
+          "Buffer de viviendas y disolución de buffers",
+          "Recortar distritos (Clip) e intersección parcelas + distritos",
+          "Selección por localización y unión espacial de atributos",
+          "Cartografía temática de resultados" ],
+        mats:[{n:"Guia_Dia3_CURSO_QGIS_2026.pdf",s:"2.6 MB",i:"📕"},{n:"Distritos_Paraguay.zip",s:"3.3 MB",i:"🗺️"}],
+        tarea:"Reproyectar las capas a UTM 21S, generar un buffer de 1 km de las viviendas, disolverlo y recortar los distritos. Entregar el mapa de cobertura resultante.",
+        quiz:[
+          {q:"¿Por qué reproyectar a UTM 21S antes de un buffer?", o:["Para medir distancias en metros","Para cambiar el color","Para reducir el peso","No es necesario"], a:0},
+          {q:"Disolver (Dissolve) sirve para…", o:["Unir geometrías eliminando límites internos","Borrar la capa","Cambiar el SRC","Crear etiquetas"], a:0},
+          {q:"Un Join espacial transfiere atributos según…", o:["La ubicación geográfica","Un ID común","El nombre del archivo","La fecha"], a:0} ]
+      },
+      { t:"Módulo 4 — Simbología avanzada y composición de mapas", tipo:"practica",
+        obj:"Crear una composición cartográfica profesional con QGIS y automatizar su producción.",
+        temas:[
+          "Simbología basada en reglas",
+          "Estadísticas zonales",
+          "Compositor de mapas: mapa principal y elementos cartográficos",
+          "Mapa de ubicación, logos y exportación (PDF/PNG)",
+          "Atlas automático por distritos" ],
+        mats:[{n:"Guia_Dia4_CURSO_QGIS_2026.pdf",s:"2.8 MB",i:"📕"},{n:"Plantilla_compositor.qpt",s:"95 KB",i:"📄"}],
+        tarea:"Componer un mapa final con leyenda, escala, norte, logo y mapa de ubicación, y generar un Atlas automático por distrito exportado a PDF. Entregar el PDF.",
+        quiz:[
+          {q:"El Atlas automático genera…", o:["Un mapa por cada entidad de una capa","Una sola imagen","Una tabla","Un gráfico"], a:0},
+          {q:"Las estadísticas zonales resumen valores de un ráster por…", o:["Zonas/polígonos","Color","Escala","Fecha"], a:0},
+          {q:"El compositor de mapas se usa para…", o:["Diseñar la salida cartográfica","Editar atributos","Instalar plugins","Reproyectar"], a:0} ]
+      },
+      { t:"Módulo 5 — Captura en campo con QField y publicación web", tipo:"practica",
+        obj:"Exportar el proyecto a aplicaciones móviles para trabajo de campo y publicar resultados en la web.",
+        temas:[
+          "Instalar QField Sync en QGIS",
+          "Preparar y empaquetar el proyecto para QField",
+          "Transferir al celular (USB) y captura con GPS",
+          "Sincronizar datos de QField de vuelta a QGIS",
+          "Google My Maps: crear mapa web y compartir" ],
+        mats:[{n:"Guia_Dia5_CURSO_QGIS_2026.pdf",s:"2.5 MB",i:"📕"},{n:"Proyecto_QField_PROEZA.zip",s:"6.1 MB",i:"🗺️"}],
+        tarea:"Empaquetar el proyecto con QField Sync, capturar 3 puntos de prueba en el celular, sincronizarlos a QGIS y publicar un mapa en Google My Maps. Entregar el enlace.",
+        quiz:[
+          {q:"QField permite…", o:["Capturar datos en campo con el GPS","Editar fotos","Diseñar logos","Crear macros"], a:0},
+          {q:"QField Sync se usa para…", o:["Empaquetar y sincronizar proyectos","Imprimir mapas","Calcular áreas","Cambiar idioma"], a:0},
+          {q:"Google My Maps sirve para…", o:["Publicar un mapa web compartible","Editar ráster","Crear geodatabases","Reproyectar"], a:0} ]
+      }
+    ]
+  },
+  {
+    id:"powerbi", cat:"Business Intelligence · Power BI", title:"Transformación Digital con Power BI",
+    glyph:"▦", color:"linear-gradient(135deg,#34A678,#18403e)",
+    desc:"Del dato a la visualización: conectar, limpiar, modelar y visualizar datos con Power BI. Curso introductorio de 20 horas.",
+    hours:"20 h",
+    incluye:["Material de apoyo y recursos","Ejercicios guiados paso a paso","Evaluación final con informe propio","Certificación"],
+    modules:[
+      { t:"Módulo 1 — Fundamentos y Estructura de Datos", tipo:"teoria",
+        obj:"Comprender el ecosistema de Power BI y la arquitectura de datos: hojas de cálculo vs. bases de datos relacionales.",
+        temas:[
+          "¿Qué es Power BI y para qué sirve?",
+          "Componentes: Desktop, Service y Mobile. Flujo de trabajo",
+          "Tipos de datos: texto, número, fecha, booleano",
+          "Tablas, filas y columnas: base de datos vs. hoja de Excel" ],
+        mats:[{n:"Guía instalación Power BI Desktop.pdf",s:"800 KB",i:"📕"},{n:"Dataset_ventas.xlsx",s:"120 KB",i:"📊"}],
+        tarea:"Instalar Power BI Desktop, importar el Dataset_ventas.xlsx e identificar el tipo de dato de cada columna. Entregar captura del modelo cargado.",
+        quiz:[
+          {q:"¿Cuál NO es un componente de Power BI?", o:["Desktop","Service","Mobile","Compiler"], a:3},
+          {q:"Un dato de tipo booleano representa…", o:["Verdadero/Falso","Texto largo","Una fecha","Una imagen"], a:0},
+          {q:"Una base de datos relacional se organiza en…", o:["Tablas relacionadas","Una sola hoja","Carpetas","Diapositivas"], a:0} ]
+      },
+      { t:"Módulo 2 — Conectividad y Gestión de Fuentes", tipo:"teoria",
+        obj:"Conectar informes con diversas fuentes asegurando la integridad y actualización automática.",
+        temas:[
+          "Importar datos desde Excel y otras fuentes",
+          "Conexión con bases de datos y servicios online",
+          "Actualización de datos y configuración de conexiones" ],
+        mats:[{n:"Guía conexión de fuentes.pdf",s:"640 KB",i:"📄"}],
+        tarea:"Conectar Power BI a dos fuentes distintas (Excel y un origen web/CSV) y configurar la actualización. Entregar el archivo .pbix.",
+        quiz:[
+          {q:"La actualización programada sirve para…", o:["Refrescar datos automáticamente","Cambiar colores","Crear medidas","Imprimir"], a:0},
+          {q:"Power BI puede conectarse a…", o:["Múltiples fuentes de datos","Solo Excel","Solo CSV","Solo SQL"], a:0},
+          {q:"Importar datos crea…", o:["Una copia en el modelo","Un acceso directo","Una imagen","Un PDF"], a:0} ]
+      },
+      { t:"Módulo 3 — ETL y Preparación con Power Query", tipo:"practica",
+        obj:"Dominar el proceso ETL para limpiar datos crudos y convertirlos en tablas útiles para el análisis.",
+        temas:[
+          "Introducción a Power Query y el editor de consultas",
+          "Filtrar, eliminar duplicados, cambiar tipos de datos",
+          "Unir y transformar tablas",
+          "Ejercicios prácticos de limpieza de datos reales" ],
+        mats:[{n:"Ejercicios_PowerQuery.xlsx",s:"180 KB",i:"📊"},{n:"Guía Power Query.pdf",s:"1.1 MB",i:"📕"}],
+        tarea:"Limpiar el dataset provisto en Power Query: eliminar duplicados, corregir tipos de datos y combinar dos tablas. Entregar el .pbix con los pasos aplicados.",
+        quiz:[
+          {q:"ETL significa…", o:["Extraer, Transformar, Cargar","Editar, Tabular, Limpiar","Exportar, Traducir, Leer","Ninguna"], a:0},
+          {q:"Power Query se usa para…", o:["Limpiar y transformar datos","Diseñar visualizaciones","Crear medidas DAX","Publicar informes"], a:0},
+          {q:"Eliminar duplicados ayuda a…", o:["Evitar conteos inflados","Cambiar colores","Crear relaciones","Acelerar la red"], a:0} ]
+      },
+      { t:"Módulo 4 — Modelado de Datos Relacional", tipo:"practica",
+        obj:"Construir un modelo eficiente con relaciones lógicas que permitan el filtrado cruzado entre tablas.",
+        temas:[
+          "¿Por qué son importantes los modelos de datos?",
+          "Relaciones: uno a uno, uno a muchos",
+          "Creación y edición de relaciones en Power BI",
+          "Buenas prácticas en el modelado (esquema estrella)" ],
+        mats:[{n:"Guía modelado estrella.pdf",s:"1.3 MB",i:"📕"}],
+        tarea:"Diseñar un esquema estrella con al menos una tabla de hechos y dos de dimensiones, creando las relaciones correctas. Entregar el .pbix.",
+        quiz:[
+          {q:"En un esquema estrella, la tabla central es…", o:["La tabla de hechos","Una dimensión","El calendario","La fuente"], a:0},
+          {q:"Una relación uno a muchos conecta…", o:["Una dimensión con muchos hechos","Dos hechos","Dos imágenes","Nada"], a:0},
+          {q:"Un buen modelo mejora…", o:["El rendimiento y el filtrado cruzado","El tamaño de fuente","El color","La impresión"], a:0} ]
+      },
+      { t:"Módulo 5 — Cálculo Avanzado con DAX", tipo:"practica",
+        obj:"Usar expresiones DAX para generar métricas complejas, KPIs y cálculos dinámicos.",
+        temas:[
+          "¿Qué es DAX y para qué sirve?",
+          "Medidas vs. columnas calculadas",
+          "Funciones básicas: SUM, AVERAGE, COUNT, IF, CALCULATE",
+          "Ejercicios prácticos de creación de métricas" ],
+        mats:[{n:"Plantillas_DAX.pdf",s:"940 KB",i:"📄"}],
+        tarea:"Crear al menos 3 medidas DAX (total de ventas, promedio y una con CALCULATE filtrada). Entregar el .pbix documentando cada fórmula.",
+        quiz:[
+          {q:"DAX significa…", o:["Data Analysis Expressions","Data Access X","Dynamic Axis","Ninguna"], a:0},
+          {q:"Una medida se calcula…", o:["En el momento de la visualización","Al guardar","Solo al imprimir","Nunca"], a:0},
+          {q:"CALCULATE permite…", o:["Modificar el contexto de filtro","Cambiar colores","Crear relaciones","Importar datos"], a:0} ]
+      },
+      { t:"Módulo 6 — Visualización e Interactividad", tipo:"practica",
+        obj:"Diseñar tableros interactivos y reportes de alto impacto visual para comunicar hallazgos.",
+        temas:[
+          "Tipos de visualizaciones en Power BI",
+          "Diseño de reportes interactivos",
+          "Filtros, segmentadores y jerarquías",
+          "Exportar y compartir informes" ],
+        mats:[{n:"Ejemplo_dashboard.pbix",s:"2.1 MB",i:"📊"},{n:"Checklist_publicacion.pdf",s:"560 KB",i:"📄"}],
+        tarea:"Construir un dashboard final con al menos 4 visualizaciones, segmentadores y un KPI. Publicarlo en Power BI Service y entregar el enlace.",
+        quiz:[
+          {q:"Un segmentador (slicer) sirve para…", o:["Filtrar el reporte interactivamente","Cambiar el tema","Crear medidas","Conectar fuentes"], a:0},
+          {q:"Power BI Service permite…", o:["Publicar y compartir en la nube","Editar fotos","Crear geodatabases","Instalar Windows"], a:0},
+          {q:"Un KPI muestra…", o:["Un indicador clave de desempeño","Una imagen","Un mapa","Un texto largo"], a:0} ]
+      }
+    ]
+  }
+];
+
+function logLine(msg, cls){
+  const el=document.getElementById('log');
+  el.style.display='block';
+  const span=document.createElement('div');
+  if(cls)span.className=cls;
+  span.textContent=msg;
+  el.appendChild(span);
+  el.scrollTop=el.scrollHeight;
+}
+
+async function run(){
+  const btn=document.getElementById('btn');
+  if(!window._fbReady||!window.fbSaveCourse){ logLine('Esperá unos segundos, Firebase aún carga, y reintentá.','err'); return; }
+  if(!window._user){ logLine('No estás logueado. Abrí el campus, iniciá sesión como admin, y volvé a esta página en la misma sesión.','err'); return; }
+  btn.disabled=true;
+  logLine('Iniciando migración de '+COURSES.length+' cursos…');
+  let ok=0, fail=0;
+  for(const c of COURSES){
+    // agrego un índice de orden para mantener la secuencia, y limpio campos de estado en memoria
+    const clean = JSON.parse(JSON.stringify(c));
+    // quitar campos de runtime si existieran
+    if(clean.modules){ clean.modules.forEach(m=>{ delete m._seen; delete m._quiz; delete m._task; }); }
+    try{
+      await window.fbSaveCourse(clean);
+      ok++;
+      logLine('✓ '+c.id+' — "'+c.title+'" subido','ok');
+    }catch(e){
+      fail++;
+      logLine('✗ '+c.id+' — ERROR: '+(e.message||e),'err');
+    }
+  }
+  logLine('');
+  logLine('Listo. Subidos: '+ok+'  ·  Errores: '+fail, fail?'err':'ok');
+  if(!fail){ logLine('Podés borrar esta página del repo cuando quieras (o dejarla para futuras migraciones).','ok'); }
+  btn.disabled=false;
+}
+window.run=run;
+</script>
+</body>
+</html>
