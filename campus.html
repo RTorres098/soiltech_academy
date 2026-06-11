@@ -2087,26 +2087,69 @@ async function deleteCourse(courseId){
 }
 
 /* ============================================================
-   FASE 3a — Editor de contenido: módulos y temas con video
+   FASE 3a/3b — Editor de contenido con formularios EN LÍNEA
+   módulos · temas (video) · materiales · tarea
    ============================================================ */
 let contentCourseId=null;
+// EDIT guarda qué se está editando inline: {kind, mi, ti/fi, isNew}
+// kind: 'modulo' | 'tema' | 'mat' | 'tarea' | null
+let EDIT=null;
 
 function openContentEditor(courseId){
   contentCourseId=courseId;
+  EDIT=null;
   renderContentEditor();
   document.getElementById('courseModal').classList.add('show');
 }
-function closeContentEditor(){ document.getElementById('courseModal').classList.remove('show'); }
-
+function closeContentEditor(){ document.getElementById('courseModal').classList.remove('show'); EDIT=null; }
 function curContentCourse(){ return COURSES.find(c=>c.id===contentCourseId); }
+
+function inputRow(label, id, value, ph){
+  return `<div class="ce-field"><label>${label}</label><input id="${id}" value="${escAttr(value||'')}" placeholder="${escAttr(ph||'')}"></div>`;
+}
+function areaRow(label, id, value, ph){
+  return `<div class="ce-field"><label>${label}</label><textarea id="${id}" placeholder="${escAttr(ph||'')}">${escHtml(value||'')}</textarea></div>`;
+}
+function formBox(inner){
+  return `<div style="background:var(--soft);border:1px solid var(--accent);border-radius:11px;padding:14px;margin:8px 12px">${inner}</div>`;
+}
+function formButtons(saveFn, label){
+  return `<div style="display:flex;gap:8px;margin-top:4px">
+    <button class="act-btn" onclick="${saveFn}">${label||'Guardar'}</button>
+    <button class="act-btn ghost" onclick="cancelEdit()">Cancelar</button></div>`;
+}
+function cancelEdit(){ EDIT=null; renderContentEditor(); }
 
 function renderContentEditor(){
   const c=curContentCourse();
   if(!c){ closeContentEditor(); return; }
   if(!Array.isArray(c.modules)) c.modules=[];
+
   const mods = c.modules.length ? c.modules.map((m,mi)=>{
+    // ---- bloque de edición de MÓDULO (inline) ----
+    let moduloForm='';
+    if(EDIT && EDIT.kind==='modulo' && EDIT.mi===mi){
+      moduloForm=formBox(
+        inputRow('Título del módulo','f-mod-t',m.t,'Ej: Fundamentos de SIG')+
+        `<div class="ce-field"><label>Tipo</label><select id="f-mod-tipo">
+           <option value="teoria" ${m.tipo!=='practica'?'selected':''}>Teoría</option>
+           <option value="practica" ${m.tipo==='practica'?'selected':''}>Con práctica</option></select></div>`+
+        areaRow('Objetivo (opcional)','f-mod-obj',m.obj,'Qué se logra en este módulo')+
+        formButtons(`saveModulo(${mi})`)
+      );
+    }
+
+    // ---- temas ----
     const temas=(m.temas||[]).map((t,ti)=>{
       const titulo=temaTitulo(t), vid=temaVideoId(t);
+      if(EDIT && EDIT.kind==='tema' && EDIT.mi===mi && EDIT.ti===ti){
+        return formBox(
+          inputRow('Título del tema','f-tema-t',titulo,'Ej: Interfaz de ArcGIS Pro')+
+          inputRow('Enlace del video de YouTube','f-tema-v',temaVideoRaw(t),'https://youtu.be/… o el ID')+
+          `<p style="font-size:11.5px;color:var(--muted);margin:-6px 0 8px">Podés pegar el enlace completo, el corto (youtu.be) o solo el ID. Dejalo vacío si todavía no tenés el video.</p>`+
+          formButtons(`saveTema(${mi},${ti})`)
+        );
+      }
       return `<div class="data-row" style="padding:9px 12px">
         <div class="dr-main"><b style="font-weight:500">${ti+1}. ${escHtml(titulo)||'(sin título)'}</b>
           <span>${vid?'▶ video OK':'○ sin video'}</span></div>
@@ -2117,15 +2160,59 @@ function renderContentEditor(){
           <button class="act-btn danger" onclick="delTema(${mi},${ti})">✕</button>
         </div></div>`;
     }).join('') || '<p style="font-size:13px;color:var(--muted);padding:6px 12px">Sin temas todavía.</p>';
-    // materiales del módulo
-    const mats=(m.mats||[]).map((f,fi)=>`<div class="data-row" style="padding:8px 12px">
+
+    // form para AGREGAR tema (al final de la lista de temas)
+    let addTemaForm='';
+    if(EDIT && EDIT.kind==='tema' && EDIT.mi===mi && EDIT.isNew){
+      addTemaForm=formBox(
+        inputRow('Título del tema','f-tema-t','','Ej: Interfaz de ArcGIS Pro')+
+        inputRow('Enlace del video de YouTube','f-tema-v','','https://youtu.be/… o el ID')+
+        formButtons(`saveTema(${mi},-1)`,'Agregar tema')
+      );
+    }
+
+    // ---- materiales ----
+    const mats=(m.mats||[]).map((f,fi)=>{
+      if(EDIT && EDIT.kind==='mat' && EDIT.mi===mi && EDIT.fi===fi){
+        return formBox(
+          inputRow('Nombre del material','f-mat-n',f.n,'Ej: Guía de instalación.pdf')+
+          inputRow('Enlace de descarga','f-mat-u',f.url||f.link,'Enlace de Google Drive, etc.')+
+          inputRow('Tamaño o nota (opcional)','f-mat-s',f.s,'Ej: 1.4 MB')+
+          formButtons(`saveMat(${mi},${fi})`)
+        );
+      }
+      return `<div class="data-row" style="padding:8px 12px">
         <div class="dr-main"><b style="font-weight:500">${escHtml(f.n||'Material')}</b>
-          <span>${f.url||f.link?'enlace OK':'sin enlace'} ${f.s?'· '+escHtml(f.s):''}</span></div>
+          <span>${(f.url||f.link)?'enlace OK':'sin enlace'} ${f.s?'· '+escHtml(f.s):''}</span></div>
         <div class="row-actions">
           <button class="act-btn ghost" onclick="editMat(${mi},${fi})">Editar</button>
           <button class="act-btn danger" onclick="delMat(${mi},${fi})">✕</button>
-        </div></div>`).join('') || '<p style="font-size:12.5px;color:var(--muted);padding:4px 12px">Sin materiales.</p>';
-    const tareaTxt = m.tarea ? escHtml(m.tarea) : '<i style="color:var(--muted)">Sin tarea definida.</i>';
+        </div></div>`;
+    }).join('') || '<p style="font-size:12.5px;color:var(--muted);padding:4px 12px">Sin materiales.</p>';
+
+    let addMatForm='';
+    if(EDIT && EDIT.kind==='mat' && EDIT.mi===mi && EDIT.isNew){
+      addMatForm=formBox(
+        inputRow('Nombre del material','f-mat-n','','Ej: Guía de instalación.pdf')+
+        inputRow('Enlace de descarga','f-mat-u','','Enlace de Google Drive, etc.')+
+        inputRow('Tamaño o nota (opcional)','f-mat-s','','Ej: 1.4 MB')+
+        formButtons(`saveMat(${mi},-1)`,'Agregar material')
+      );
+    }
+
+    // ---- tarea ----
+    let tareaBlock;
+    if(EDIT && EDIT.kind==='tarea' && EDIT.mi===mi){
+      tareaBlock=formBox(
+        areaRow('Consigna de la tarea','f-tarea',m.tarea,'Describí qué debe entregar el alumno')+
+        formButtons(`saveTarea(${mi})`)
+      );
+    }else{
+      const tareaTxt = m.tarea ? escHtml(m.tarea) : '<i style="color:var(--muted)">Sin tarea definida.</i>';
+      tareaBlock=`<div style="padding:4px 12px 8px;font-size:13px;color:#3c362e">${tareaTxt}
+        <button class="act-btn ghost" style="margin-left:8px" onclick="editTarea(${mi})">Editar tarea</button></div>`;
+    }
+
     return `<div class="data-card" style="margin-bottom:14px">
       <div class="tbl-head" style="display:flex;justify-content:space-between;align-items:center">
         <span>Módulo ${mi+1}: ${escHtml(m.t||'(sin título)')}</span>
@@ -2136,22 +2223,37 @@ function renderContentEditor(){
           <button class="act-btn danger" onclick="delModulo(${mi})">Borrar</button>
         </span>
       </div>
+      ${moduloForm}
       <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)">Temas</div>
       ${temas}
+      ${addTemaForm}
       <div style="padding:8px 12px"><button class="act-btn" onclick="addTema(${mi})">+ Agregar tema</button></div>
       <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)">Materiales</div>
       ${mats}
+      ${addMatForm}
       <div style="padding:8px 12px"><button class="act-btn ghost" onclick="addMat(${mi})">+ Agregar material</button></div>
       <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)">Tarea</div>
-      <div style="padding:4px 12px 8px;font-size:13px;color:#3c362e">${tareaTxt}
-        <button class="act-btn ghost" style="margin-left:8px" onclick="editTarea(${mi})">Editar tarea</button></div>
+      ${tareaBlock}
     </div>`;
   }).join('') : '<p style="font-size:13.5px;color:var(--muted);margin-bottom:14px">Esta capacitación todavía no tiene módulos.</p>';
 
+  // form para AGREGAR módulo
+  let addModuloForm='';
+  if(EDIT && EDIT.kind==='modulo' && EDIT.isNew){
+    addModuloForm=formBox(
+      inputRow('Título del módulo','f-mod-t','','Ej: Fundamentos de SIG')+
+      `<div class="ce-field"><label>Tipo</label><select id="f-mod-tipo">
+         <option value="teoria" selected>Teoría</option>
+         <option value="practica">Con práctica</option></select></div>`+
+      areaRow('Objetivo (opcional)','f-mod-obj','','Qué se logra en este módulo')+
+      formButtons('saveModulo(-1)','Agregar módulo')
+    );
+  }
+
   document.getElementById('courseBody').innerHTML=`
     <h2 style="font-size:21px;margin-bottom:4px">Contenido · ${escHtml(c.title)}</h2>
-    <p style="color:var(--muted);font-size:13.5px;margin-bottom:18px">Gestioná los módulos y, dentro de cada uno, los temas con su enlace de video de YouTube.</p>
-    <div style="max-height:50vh;overflow:auto;margin-bottom:14px">${mods}</div>
+    <p style="color:var(--muted);font-size:13.5px;margin-bottom:18px">Gestioná los módulos y, dentro de cada uno, los temas con su enlace de video de YouTube, los materiales y la tarea.</p>
+    <div style="max-height:54vh;overflow:auto;margin-bottom:14px">${mods}${addModuloForm}</div>
     <div style="display:flex;gap:10px;border-top:1px solid var(--line);padding-top:14px">
       <button class="act-btn" onclick="addModulo()">+ Agregar módulo</button>
       <button class="act-btn" onclick="saveContent()" style="margin-left:auto">Guardar contenido</button>
@@ -2161,59 +2263,80 @@ function renderContentEditor(){
 }
 
 /* --- módulos --- */
-function addModulo(){
-  const t=prompt('Título del módulo:'); if(t===null) return;
+function addModulo(){ EDIT={kind:'modulo',isNew:true}; renderContentEditor(); }
+function editModulo(mi){ EDIT={kind:'modulo',mi}; renderContentEditor(); }
+function saveModulo(mi){
+  const t=(document.getElementById('f-mod-t').value||'').trim();
+  const tipo=document.getElementById('f-mod-tipo').value==='practica'?'practica':'teoria';
+  const obj=(document.getElementById('f-mod-obj').value||'').trim();
+  if(!t){ alert('El módulo necesita un título.'); return; }
   const c=curContentCourse();
-  c.modules.push({ t:t.trim(), tipo:'teoria', obj:'', temas:[], mats:[], tarea:'', quiz:[] });
-  renderContentEditor();
-}
-function editModulo(mi){
-  const c=curContentCourse(), m=c.modules[mi];
-  const t=prompt('Título del módulo:', m.t); if(t===null) return;
-  m.t=t.trim();
-  const tipo=prompt('Tipo: escribí "teoria" o "practica"', m.tipo||'teoria');
-  if(tipo!==null){ m.tipo=(tipo.trim()==='practica')?'practica':'teoria'; }
-  const obj=prompt('Objetivo del módulo (opcional):', m.obj||''); if(obj!==null) m.obj=obj.trim();
-  renderContentEditor();
+  if(mi===-1){ c.modules.push({ t, tipo, obj, temas:[], mats:[], tarea:'', quiz:[] }); }
+  else{ const m=c.modules[mi]; m.t=t; m.tipo=tipo; m.obj=obj; }
+  EDIT=null; renderContentEditor();
 }
 function delModulo(mi){
   const c=curContentCourse();
   if(!confirm(`¿Borrar el módulo "${c.modules[mi].t}" y todos sus temas?`)) return;
-  c.modules.splice(mi,1); renderContentEditor();
+  c.modules.splice(mi,1); EDIT=null; renderContentEditor();
 }
 function moveModulo(mi,dir){
   const c=curContentCourse(), j=mi+dir;
   if(j<0||j>=c.modules.length) return;
   [c.modules[mi],c.modules[j]]=[c.modules[j],c.modules[mi]];
-  renderContentEditor();
+  EDIT=null; renderContentEditor();
 }
 
 /* --- temas --- */
-function addTema(mi){
-  const c=curContentCourse();
-  const titulo=prompt('Título del tema:'); if(titulo===null) return;
-  const video=prompt('Enlace del video de YouTube (o dejalo vacío y lo cargás después):','');
-  c.modules[mi].temas.push({ titulo:titulo.trim(), video:(video||'').trim() });
-  renderContentEditor();
-}
-function editTema(mi,ti){
-  const c=curContentCourse(), t=c.modules[mi].temas[ti];
-  const titulo=prompt('Título del tema:', temaTitulo(t)); if(titulo===null) return;
-  const video=prompt('Enlace del video de YouTube:', temaVideoRaw(t));
-  // normalizar a objeto {titulo, video}
-  c.modules[mi].temas[ti]={ titulo:titulo.trim(), video:(video===null?temaVideoRaw(t):video.trim()) };
-  renderContentEditor();
+function addTema(mi){ EDIT={kind:'tema',mi,isNew:true}; renderContentEditor(); }
+function editTema(mi,ti){ EDIT={kind:'tema',mi,ti}; renderContentEditor(); }
+function saveTema(mi,ti){
+  const titulo=(document.getElementById('f-tema-t').value||'').trim();
+  const video=(document.getElementById('f-tema-v').value||'').trim();
+  if(!titulo){ alert('El tema necesita un título.'); return; }
+  const arr=curContentCourse().modules[mi].temas;
+  if(ti===-1){ arr.push({ titulo, video }); }
+  else{ arr[ti]={ titulo, video }; }
+  EDIT=null; renderContentEditor();
 }
 function delTema(mi,ti){
-  const c=curContentCourse();
   if(!confirm('¿Borrar este tema?')) return;
-  c.modules[mi].temas.splice(ti,1); renderContentEditor();
+  curContentCourse().modules[mi].temas.splice(ti,1); EDIT=null; renderContentEditor();
 }
 function moveTema(mi,ti,dir){
   const arr=curContentCourse().modules[mi].temas, j=ti+dir;
   if(j<0||j>=arr.length) return;
   [arr[ti],arr[j]]=[arr[j],arr[ti]];
-  renderContentEditor();
+  EDIT=null; renderContentEditor();
+}
+
+/* --- materiales --- */
+function addMat(mi){
+  const m=curContentCourse().modules[mi];
+  if(!Array.isArray(m.mats)) m.mats=[];
+  EDIT={kind:'mat',mi,isNew:true}; renderContentEditor();
+}
+function editMat(mi,fi){ EDIT={kind:'mat',mi,fi}; renderContentEditor(); }
+function saveMat(mi,fi){
+  const n=(document.getElementById('f-mat-n').value||'').trim();
+  const url=(document.getElementById('f-mat-u').value||'').trim();
+  const s=(document.getElementById('f-mat-s').value||'').trim();
+  if(!n){ alert('El material necesita un nombre.'); return; }
+  const arr=curContentCourse().modules[mi].mats;
+  if(fi===-1){ arr.push({ n, url, s, i:'📄' }); }
+  else{ const f=arr[fi]; f.n=n; f.url=url; f.s=s; delete f.link; }
+  EDIT=null; renderContentEditor();
+}
+function delMat(mi,fi){
+  if(!confirm('¿Borrar este material?')) return;
+  curContentCourse().modules[mi].mats.splice(fi,1); EDIT=null; renderContentEditor();
+}
+
+/* --- tarea --- */
+function editTarea(mi){ EDIT={kind:'tarea',mi}; renderContentEditor(); }
+function saveTarea(mi){
+  const t=(document.getElementById('f-tarea').value||'').trim();
+  curContentCourse().modules[mi].tarea=t; EDIT=null; renderContentEditor();
 }
 
 async function saveContent(){
@@ -2229,36 +2352,8 @@ async function saveContent(){
   }
 }
 
-/* --- materiales --- */
-function addMat(mi){
-  const c=curContentCourse(); const m=c.modules[mi];
-  if(!Array.isArray(m.mats)) m.mats=[];
-  const n=prompt('Nombre del material (ej: Guía de instalación.pdf):'); if(n===null) return;
-  const url=prompt('Enlace de descarga (Google Drive, etc.):',''); if(url===null) return;
-  const s=prompt('Tamaño o nota (opcional, ej: 1.4 MB):','')||'';
-  m.mats.push({ n:n.trim(), url:url.trim(), s:s.trim(), i:'📄' });
-  renderContentEditor();
-}
-function editMat(mi,fi){
-  const f=curContentCourse().modules[mi].mats[fi];
-  const n=prompt('Nombre del material:', f.n||''); if(n===null) return;
-  const url=prompt('Enlace de descarga:', f.url||f.link||''); if(url===null) return;
-  const s=prompt('Tamaño o nota (opcional):', f.s||''); if(s===null) return;
-  f.n=n.trim(); f.url=url.trim(); f.s=s.trim(); delete f.link;
-  renderContentEditor();
-}
-function delMat(mi,fi){
-  if(!confirm('¿Borrar este material?')) return;
-  curContentCourse().modules[mi].mats.splice(fi,1); renderContentEditor();
-}
-
-/* --- tarea --- */
-function editTarea(mi){
-  const m=curContentCourse().modules[mi];
-  const t=prompt('Consigna de la tarea del módulo:', m.tarea||''); if(t===null) return;
-  m.tarea=t.trim(); renderContentEditor();
-}
-
+window.cancelEdit=cancelEdit;
+window.saveModulo=saveModulo;window.saveTema=saveTema;window.saveMat=saveMat;window.saveTarea=saveTarea;
 window.addMat=addMat;window.editMat=editMat;window.delMat=delMat;window.editTarea=editTarea;
 
 window.openContentEditor=openContentEditor;
