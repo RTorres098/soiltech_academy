@@ -391,7 +391,7 @@
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
            signOut, onAuthStateChanged, updateProfile }
     from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, serverTimestamp,
+  import { getFirestore, doc, setDoc, getDoc, deleteDoc, serverTimestamp,
            collection, addDoc, updateDoc, query, where, getDocs, orderBy }
     from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
@@ -578,6 +578,32 @@
     }catch(e){ console.warn('saveCourseSettings',e); throw e; }
   };
 
+  // ===== CURSOS (contenido completo, editable por admin) =====
+  // courses/{courseId} -> documento con todo el curso (cat, title, modules[], etc.)
+  window.fbLoadCourses = async () => {
+    try{
+      const snap = await getDocs(collection(db,"courses"));
+      if(snap.empty) return null;
+      const list = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+      // ordenar por campo 'orden' si existe, si no por título
+      list.sort((a,b)=>{
+        if(typeof a.orden==='number' && typeof b.orden==='number') return a.orden-b.orden;
+        return (a.title||'').localeCompare(b.title||'');
+      });
+      return list;
+    }catch(e){ console.warn('loadCourses',e); return null; }
+  };
+  window.fbSaveCourse = async (course) => {
+    try{
+      await setDoc(doc(db,"courses",course.id), { ...course, updatedAt: serverTimestamp() }, { merge:false });
+    }catch(e){ console.warn('saveCourse',e); throw e; }
+  };
+  window.fbDeleteCourse = async (courseId) => {
+    try{
+      await deleteDoc(doc(db,"courses",courseId));
+    }catch(e){ console.warn('deleteCourse',e); throw e; }
+  };
+
   // ===== USERS (admin) =====
   window.fbListUsers = async () => {
     try{
@@ -629,7 +655,9 @@
      todos los cuestionarios >=60%, todas las tareas aprobadas
    ============================================================ */
 
-const COURSES = [
+// Array de respaldo (fallback). El campus intenta leer los cursos desde Firebase
+// al arrancar; si Firebase falla o está vacío, usa este array. NO borrar.
+let COURSES = [
   {
     id:"arcgis", cat:"SIG · ArcGIS Pro & Online", title:"Capacitación en SIG — ArcGIS Pro & Online",
     glyph:"◆", color:"linear-gradient(135deg,#225235,#0e2a28)",
@@ -1007,7 +1035,7 @@ async function logout(){
 }
 
 // --- callbacks desde el módulo Firebase ---
-window.onAuthIn = function(u){
+window.onAuthIn = async function(u){
   USER={name:u.name, email:u.email, uid:u.uid, role:u.role||'alumno'};
   document.getElementById('uName').textContent=USER.name;
   document.getElementById('uEmail').textContent=USER.email;
@@ -1015,9 +1043,28 @@ window.onAuthIn = function(u){
   setBtnLoading(false);
   document.getElementById('login').style.display='none';
   document.getElementById('app').style.display='block';
+  // cargar cursos desde Firebase (con el array como respaldo)
+  await loadCoursesFromFirebase();
   applyRoleVisibility();
   setRole(USER.role);   // entra al panel según su rol real
 };
+
+// Lee los cursos desde Firebase y reemplaza el array. Si Firebase falla o está
+// vacío, conserva el array de respaldo. Reinicia el estado en memoria.
+let COURSES_SOURCE='respaldo';
+async function loadCoursesFromFirebase(){
+  try{
+    if(window.fbLoadCourses){
+      const fromFb = await window.fbLoadCourses();
+      if(fromFb && fromFb.length){
+        COURSES = fromFb;
+        COURSES_SOURCE='firebase';
+      }
+    }
+  }catch(e){ console.warn('No se pudieron cargar cursos de Firebase, uso respaldo:', e); }
+  initState();   // re-inicializa _seen/_quiz/_task sobre los cursos vigentes
+  console.log('Cursos cargados desde:', COURSES_SOURCE, '·', COURSES.length, 'cursos');
+}
 window.onAuthOut = function(){
   document.getElementById('app').style.display='none';
   document.getElementById('login').style.display='flex';
