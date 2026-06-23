@@ -947,19 +947,32 @@ const PASS = 80; // % mínimo para aprobar cuestionario
 /* ---------- helpers de TEMA (compatibles: texto simple o {titulo, video}) ---------- */
 function temaTitulo(t){ return (t && typeof t==='object') ? (t.titulo||t.t||'') : (t||''); }
 function temaVideoRaw(t){ return (t && typeof t==='object') ? (t.video||'') : ''; }
-// extrae el ID de YouTube de una URL completa o devuelve el texto si ya es un ID
-function ytId(url){
-  if(!url) return '';
+// extrae {id, hash} de un enlace de Vimeo. Los videos privados/no listados llevan
+// un hash de privacidad: vimeo.com/123456789/abc123  ó  player.vimeo.com/video/123456789?h=abc123
+function vimeoParts(url){
+  if(!url) return {id:'',hash:''};
   url=url.trim();
-  if(/^[\w-]{11}$/.test(url)) return url;               // ya es un ID
-  let m=url.match(/[?&]v=([\w-]{11})/);  if(m) return m[1];
-  m=url.match(/youtu\.be\/([\w-]{11})/); if(m) return m[1];
-  m=url.match(/embed\/([\w-]{11})/);     if(m) return m[1];
-  m=url.match(/shorts\/([\w-]{11})/);    if(m) return m[1];
-  m=url.match(/([\w-]{11})/);            if(m) return m[1]; // último recurso
-  return '';
+  let id='', hash='';
+  // hash en formato ?h=xxxx
+  let mh=url.match(/[?&]h=([0-9a-zA-Z]+)/); if(mh) hash=mh[1];
+  // id (y hash en formato /id/hash)
+  let m=url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([0-9a-zA-Z]+))?/);
+  if(m){ id=m[1]; if(!hash && m[2]) hash=m[2]; }
+  else { // solo el ID numérico suelto
+    m=url.match(/(\d{6,})/); if(m) id=m[1];
+  }
+  return {id, hash};
 }
-function temaVideoId(t){ return ytId(temaVideoRaw(t)); }
+function vimeoId(url){ return vimeoParts(url).id; }   // compatibilidad
+function temaVideoId(t){ return vimeoId(temaVideoRaw(t)); }
+function temaVideoSrc(t){
+  const {id,hash}=vimeoParts(temaVideoRaw(t));
+  if(!id) return '';
+  let src='https://player.vimeo.com/video/'+id+'?';
+  if(hash) src+='h='+hash+'&';
+  src+='title=0&byline=0&portrait=0&dnt=1';
+  return src;
+}
 
 function initState(){
   COURSES.forEach(c=>c.modules.forEach(m=>{
@@ -1194,9 +1207,9 @@ function renderDetail(){
   c.modules.forEach((m,i)=>{
     // temas con video (compatibles: texto simple o {titulo, video})
     const temas=m.temas.map((t,j)=>{
-      const titulo=temaTitulo(t), vid=temaVideoId(t);
+      const titulo=temaTitulo(t), vid=temaVideoId(t), vsrc=temaVideoSrc(t);
       const player = vid
-        ? `<div class="vembed"><iframe src="https://www.youtube-nocookie.com/embed/${vid}?rel=0&modestbranding=1" title="${escAttr(titulo)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+        ? `<div class="vembed"><iframe src="${vsrc}" title="${escAttr(titulo)}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`
         : `<div class="vbox"><div><div class="ico">▶</div><b>Video pendiente de cargar</b><span>${escHtml(titulo)}</span></div></div>`;
       return `
       <div class="tema${m._seen[j]?' seen':''}" id="tema-${i}-${j}">
@@ -2118,7 +2131,24 @@ function formButtons(saveFn, label){
     <button class="act-btn" onclick="${saveFn}">${label||'Guardar'}</button>
     <button class="act-btn ghost" onclick="cancelEdit()">Cancelar</button></div>`;
 }
-function cancelEdit(){ EDIT=null; renderContentEditor(); }
+function cancelEdit(){ EDIT=null; QUIZDRAFT=null; renderContentEditor(); }
+
+// formulario de una pregunta (inline). qi=-1 => nueva
+function quizForm(mi,qi,q){
+  const opts=(q.o||['','']).map((op,oi)=>`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+      <input type="radio" name="f-quiz-correct" value="${oi}" ${oi===q.a?'checked':''} title="Marcar como correcta" style="flex:none;width:auto">
+      <input id="f-quiz-o-${oi}" value="${escAttr(op)}" placeholder="Opción ${oi+1}" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13.5px">
+      <button class="act-btn danger" onclick="removeQuizOpt(${mi},${qi},${oi})" ${(q.o||[]).length<=2?'style="opacity:.4;cursor:not-allowed" disabled':''}>✕</button>
+    </div>`).join('');
+  return formBox(
+    areaRow('Pregunta','f-quiz-q',q.q,'Escribí la pregunta')+
+    `<label style="display:block;font-size:12.5px;font-weight:600;color:var(--green-deep);margin-bottom:6px">Opciones (marcá la correcta)</label>
+     ${opts}
+     <button class="act-btn ghost" onclick="addQuizOpt(${mi},${qi})" style="margin:2px 0 4px">+ Agregar opción</button>`+
+    formButtons(`saveQuiz(${mi},${qi})`, qi===-1?'Agregar pregunta':'Guardar')
+  );
+}
 
 function renderContentEditor(){
   const c=curContentCourse();
@@ -2145,8 +2175,8 @@ function renderContentEditor(){
       if(EDIT && EDIT.kind==='tema' && EDIT.mi===mi && EDIT.ti===ti){
         return formBox(
           inputRow('Título del tema','f-tema-t',titulo,'Ej: Interfaz de ArcGIS Pro')+
-          inputRow('Enlace del video de YouTube','f-tema-v',temaVideoRaw(t),'https://youtu.be/… o el ID')+
-          `<p style="font-size:11.5px;color:var(--muted);margin:-6px 0 8px">Podés pegar el enlace completo, el corto (youtu.be) o solo el ID. Dejalo vacío si todavía no tenés el video.</p>`+
+          inputRow('Enlace del video de Vimeo','f-tema-v',temaVideoRaw(t),'https://vimeo.com/123456789/abc123')+
+          `<p style="font-size:11.5px;color:var(--muted);margin:-6px 0 8px">IMPORTANTE: pegá el enlace COMPLETO de Vimeo (incluye el código de privacidad después del número, ej: vimeo.com/123456789/abc123). Sin ese código los videos privados no se ven. Dejalo vacío si todavía no tenés el video.</p>`+
           formButtons(`saveTema(${mi},${ti})`)
         );
       }
@@ -2166,7 +2196,7 @@ function renderContentEditor(){
     if(EDIT && EDIT.kind==='tema' && EDIT.mi===mi && EDIT.isNew){
       addTemaForm=formBox(
         inputRow('Título del tema','f-tema-t','','Ej: Interfaz de ArcGIS Pro')+
-        inputRow('Enlace del video de YouTube','f-tema-v','','https://youtu.be/… o el ID')+
+        inputRow('Enlace del video de Vimeo','f-tema-v','','https://vimeo.com/123456789/abc123')+
         formButtons(`saveTema(${mi},-1)`,'Agregar tema')
       );
     }
@@ -2213,6 +2243,26 @@ function renderContentEditor(){
         <button class="act-btn ghost" style="margin-left:8px" onclick="editTarea(${mi})">Editar tarea</button></div>`;
     }
 
+    // ---- cuestionario ----
+    if(!Array.isArray(m.quiz)) m.quiz=[];
+    const quiz=(m.quiz||[]).map((q,qi)=>{
+      if(EDIT && EDIT.kind==='quiz' && EDIT.mi===mi && EDIT.qi===qi){
+        return quizForm(mi,qi,QUIZDRAFT||q);
+      }
+      const opts=(q.o||[]).map((op,oi)=>`<span style="display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;margin:2px 3px 0 0;${oi===q.a?'background:var(--accent);color:#fff':'background:var(--soft);color:var(--muted)'}">${oi===q.a?'✓ ':''}${escHtml(op)}</span>`).join('');
+      return `<div class="data-row" style="padding:9px 12px;align-items:flex-start">
+        <div class="dr-main" style="flex:1"><b style="font-weight:500">${qi+1}. ${escHtml(q.q||'(sin pregunta)')}</b>
+          <div style="margin-top:3px">${opts}</div></div>
+        <div class="row-actions">
+          <button class="act-btn ghost" onclick="editQuiz(${mi},${qi})">Editar</button>
+          <button class="act-btn danger" onclick="delQuiz(${mi},${qi})">✕</button>
+        </div></div>`;
+    }).join('') || '<p style="font-size:12.5px;color:var(--muted);padding:4px 12px">Sin preguntas.</p>';
+    let addQuizForm='';
+    if(EDIT && EDIT.kind==='quiz' && EDIT.mi===mi && EDIT.isNew){
+      addQuizForm=quizForm(mi,-1,QUIZDRAFT||{q:'',o:['',''],a:0});
+    }
+
     return `<div class="data-card" style="margin-bottom:14px">
       <div class="tbl-head" style="display:flex;justify-content:space-between;align-items:center">
         <span>Módulo ${mi+1}: ${escHtml(m.t||'(sin título)')}</span>
@@ -2234,6 +2284,10 @@ function renderContentEditor(){
       <div style="padding:8px 12px"><button class="act-btn ghost" onclick="addMat(${mi})">+ Agregar material</button></div>
       <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)">Tarea</div>
       ${tareaBlock}
+      <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)">Cuestionario (${m.quiz.length} ${m.quiz.length===1?'pregunta':'preguntas'})</div>
+      ${quiz}
+      ${addQuizForm}
+      <div style="padding:8px 12px"><button class="act-btn ghost" onclick="addQuiz(${mi})">+ Agregar pregunta</button></div>
     </div>`;
   }).join('') : '<p style="font-size:13.5px;color:var(--muted);margin-bottom:14px">Esta capacitación todavía no tiene módulos.</p>';
 
@@ -2252,7 +2306,7 @@ function renderContentEditor(){
 
   document.getElementById('courseBody').innerHTML=`
     <h2 style="font-size:21px;margin-bottom:4px">Contenido · ${escHtml(c.title)}</h2>
-    <p style="color:var(--muted);font-size:13.5px;margin-bottom:18px">Gestioná los módulos y, dentro de cada uno, los temas con su enlace de video de YouTube, los materiales y la tarea.</p>
+    <p style="color:var(--muted);font-size:13.5px;margin-bottom:18px">Gestioná los módulos y, dentro de cada uno, los temas con su enlace de video de Vimeo, los materiales y la tarea.</p>
     <div style="max-height:54vh;overflow:auto;margin-bottom:14px">${mods}${addModuloForm}</div>
     <div style="display:flex;gap:10px;border-top:1px solid var(--line);padding-top:14px">
       <button class="act-btn" onclick="addModulo()">+ Agregar módulo</button>
@@ -2339,6 +2393,56 @@ function saveTarea(mi){
   curContentCourse().modules[mi].tarea=t; EDIT=null; renderContentEditor();
 }
 
+/* --- cuestionario --- */
+// borrador en memoria para no perder lo tipeado al agregar/quitar opciones
+let QUIZDRAFT=null;
+function addQuiz(mi){ QUIZDRAFT={q:'',o:['',''],a:0}; EDIT={kind:'quiz',mi,qi:-1,isNew:true}; renderContentEditor(); }
+function editQuiz(mi,qi){
+  const src=curContentCourse().modules[mi].quiz[qi];
+  QUIZDRAFT={ q:src.q||'', o:(src.o||[]).slice(), a:typeof src.a==='number'?src.a:0 };
+  EDIT={kind:'quiz',mi,qi}; renderContentEditor();
+}
+// lee lo que hay en el formulario hacia QUIZDRAFT (para no perderlo al re-render)
+function readQuizForm(){
+  if(!QUIZDRAFT) return;
+  const qEl=document.getElementById('f-quiz-q'); if(qEl) QUIZDRAFT.q=qEl.value;
+  const opts=[]; let i=0;
+  while(document.getElementById('f-quiz-o-'+i)){ opts.push(document.getElementById('f-quiz-o-'+i).value); i++; }
+  if(opts.length) QUIZDRAFT.o=opts;
+  const checked=document.querySelector('input[name="f-quiz-correct"]:checked');
+  if(checked) QUIZDRAFT.a=+checked.value;
+}
+function addQuizOpt(mi,qi){
+  readQuizForm(); QUIZDRAFT.o.push(''); renderContentEditor();
+}
+function removeQuizOpt(mi,qi,oi){
+  readQuizForm();
+  if(QUIZDRAFT.o.length<=2) return;
+  QUIZDRAFT.o.splice(oi,1);
+  if(QUIZDRAFT.a>=QUIZDRAFT.o.length) QUIZDRAFT.a=0;
+  if(QUIZDRAFT.a===oi) QUIZDRAFT.a=0;
+  renderContentEditor();
+}
+function saveQuiz(mi,qi){
+  readQuizForm();
+  const q=(QUIZDRAFT.q||'').trim();
+  const o=(QUIZDRAFT.o||[]).map(x=>(x||'').trim());
+  if(!q){ alert('La pregunta necesita un texto.'); return; }
+  if(o.filter(Boolean).length<2){ alert('Tenés que cargar al menos 2 opciones.'); return; }
+  // limpiar opciones vacías al final, ajustando el índice correcto
+  const cleaned=[]; let newA=QUIZDRAFT.a;
+  o.forEach((op,idx)=>{ if(op){ cleaned.push(op); } else if(idx<QUIZDRAFT.a){ newA--; } });
+  if(newA<0||newA>=cleaned.length) newA=0;
+  const item={ q, o:cleaned, a:newA };
+  const arr=curContentCourse().modules[mi].quiz;
+  if(qi===-1){ arr.push(item); } else { arr[qi]=item; }
+  QUIZDRAFT=null; EDIT=null; renderContentEditor();
+}
+function delQuiz(mi,qi){
+  if(!confirm('¿Borrar esta pregunta?')) return;
+  curContentCourse().modules[mi].quiz.splice(qi,1); renderContentEditor();
+}
+
 async function saveContent(){
   const c=curContentCourse();
   const msg=document.getElementById('content-msg');
@@ -2355,6 +2459,8 @@ async function saveContent(){
 window.cancelEdit=cancelEdit;
 window.saveModulo=saveModulo;window.saveTema=saveTema;window.saveMat=saveMat;window.saveTarea=saveTarea;
 window.addMat=addMat;window.editMat=editMat;window.delMat=delMat;window.editTarea=editTarea;
+window.addQuiz=addQuiz;window.editQuiz=editQuiz;window.saveQuiz=saveQuiz;window.delQuiz=delQuiz;
+window.addQuizOpt=addQuizOpt;window.removeQuizOpt=removeQuizOpt;
 
 window.openContentEditor=openContentEditor;
 window.closeContentEditor=closeContentEditor;
