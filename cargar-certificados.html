@@ -4,65 +4,96 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Carga de certificados · SoilTech Academy (admin)</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--green:#225235;--green-deep:#18403e;--green-darker:#0e2a28;--green-soft:#2f6b47;--gold:#a9842f;
     --accent:#34A678;--ink:#1a1410;--muted:#6b6258;--line:rgba(34,82,53,.14);--soft:#f4f0e8;--red:#b3472f;}
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Outfit',sans-serif;background:var(--soft);color:var(--ink);padding:30px 18px;min-height:100vh}
-  h1,h2{font-family:'Fraunces',serif;color:var(--green-deep)}
-  .wrap{max-width:760px;margin:0 auto}
+  body{font-family:'Inter',sans-serif;background:var(--soft);color:var(--ink);padding:30px 18px;min-height:100vh}
+  h1,h2{color:var(--green-deep)}
+  .wrap{max-width:820px;margin:0 auto}
   .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;box-shadow:0 4px 16px rgba(34,82,53,.06);margin-bottom:18px}
-  h1{font-size:26px;margin-bottom:4px}
+  h1{font-size:25px;margin-bottom:4px;font-weight:800}
+  h2{font-size:17px;margin-bottom:10px;font-weight:700}
   .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
-  label{display:block;font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-  input{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:14px}
-  input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,166,120,.12)}
+  label{display:block;font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;font-weight:600}
+  input,textarea{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:14px}
+  textarea{min-height:130px;font-family:monospace;font-size:12.5px;resize:vertical;white-space:pre}
+  input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,166,120,.12)}
   button{background:var(--green);color:#fff;border:none;padding:13px 22px;border-radius:10px;font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:.2s}
   button:hover{background:var(--green-soft)} button:disabled{opacity:.6;cursor:default}
   .ghost{background:transparent;color:var(--green);border:1px solid var(--line)}
   .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
   table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
   th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--gold)}
-  td.code{font-family:monospace;color:var(--green-deep)}
-  .st{font-size:12px;padding:2px 8px;border-radius:20px}
+  td.code{font-family:monospace;color:var(--green-deep);white-space:nowrap}
+  .st{font-size:12px;padding:2px 8px;border-radius:20px;white-space:nowrap}
   .st-ok{background:rgba(52,166,120,.15);color:var(--green)}
   .st-err{background:rgba(179,71,47,.12);color:var(--red)}
   .st-wait{background:var(--soft);color:var(--muted)}
   #log{font-size:13px;color:var(--muted);margin-top:12px;min-height:20px}
   .warn{background:#fff6e6;border:1px solid var(--gold);border-radius:10px;padding:12px 14px;font-size:13px;color:#6b3a12;margin-bottom:18px;line-height:1.5}
+  .info{background:#eef4f0;border:1px solid rgba(52,166,120,.3);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--green-deep);margin-bottom:16px;line-height:1.55}
+  .info code{background:#fff;padding:1px 6px;border-radius:5px;font-size:12px}
+  .tabs{display:flex;gap:8px;margin-bottom:16px}
+  .tab{padding:8px 16px;border-radius:30px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer}
+  .tab.on{background:var(--green);color:#fff;border-color:var(--green)}
+  .err-detail{color:var(--red);font-size:12px;margin-top:4px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
-    <h1>Carga de certificados — Power BI</h1>
-    <div class="sub">Herramienta de administración. Sube los 23 certificados a Firestore para que <b>verificar.html</b> los reconozca.</div>
-    <div class="warn">⚠ <b>Solo para administradores.</b> Necesitás iniciar sesión con una cuenta con rol <b>admin</b>. Esta página podés borrarla del repo después de usarla.</div>
+    <h1>Carga de certificados</h1>
+    <div class="sub">Herramienta de administraci&oacute;n. Sube certificados a Firestore (colecci&oacute;n <b>certificates</b>) desde una planilla, para que <b>verificar</b> los reconozca.</div>
+    <div class="warn">&#9888; <b>Solo para administradores.</b> Necesit&aacute;s iniciar sesi&oacute;n con una cuenta con rol <b>admin</b> para que Firebase permita la escritura.</div>
 
     <div id="authBox">
       <label>Correo (admin)</label>
       <input id="email" type="email" placeholder="tu-correo@...">
-      <label>Contraseña</label>
-      <input id="pass" type="password" placeholder="••••••••">
-      <button onclick="login()">Iniciar sesión</button>
+      <label>Contrase&ntilde;a</label>
+      <input id="pass" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+      <button onclick="login()">Iniciar sesi&oacute;n</button>
       <p id="autherr" style="color:var(--red);font-size:13px;margin-top:10px;min-height:16px"></p>
     </div>
 
     <div id="panel" style="display:none">
-      <label>Fecha de emisión (igual para todos)</label>
-      <input id="fecha" placeholder="ej.: 4 de junio de 2026">
-      <label>Capacitación</label>
-      <input id="curso" value="Capacitación en Power BI">
-      <label>Carga horaria</label>
-      <input id="horas" value="20 h">
-      <div class="row" style="margin-top:6px">
-        <button id="upBtn" onclick="subir()">Subir los 23 certificados</button>
-        <button class="ghost" onclick="logout()">Cerrar sesión</button>
+      <h2>1 &middot; Peg&aacute; o sub&iacute; la planilla</h2>
+      <div class="info">
+        La planilla debe tener una <b>fila de encabezados</b> con estas columnas (el orden no importa):<br>
+        <code>code</code> &middot; <code>studentName</code> &middot; <code>courseTitle</code> &middot; <code>hours</code> &middot; <code>issueDate</code>
+        &nbsp;(opcional: <code>courseId</code>, <code>modules</code>)<br>
+        Para <b>modules</b>, separ&aacute; los m&oacute;dulos con punto y coma <code>;</code> dentro de la celda.
       </div>
-      <div id="log"></div>
-      <table id="tbl"><thead><tr><th>Código</th><th>Nombre</th><th>Estado</th></tr></thead><tbody></tbody></table>
+
+      <div class="tabs">
+        <div class="tab on" id="tabPaste" onclick="setMode('paste')">Pegar datos</div>
+        <div class="tab" id="tabFile" onclick="setMode('file')">Subir archivo CSV</div>
+      </div>
+
+      <div id="modePaste">
+        <label>Peg&aacute; ac&aacute; la planilla (copi&aacute; desde Excel / Google Sheets, o peg&aacute; un CSV)</label>
+        <textarea id="pasteBox" placeholder="code	studentName	courseTitle	hours	issueDate&#10;ST-QGI-2026-A3F9	Mar&iacute;a Balbuena	Manejo de QGIS...	30 h	15 de junio de 2026"></textarea>
+      </div>
+
+      <div id="modeFile" style="display:none">
+        <label>Eleg&iacute; un archivo .csv</label>
+        <input id="fileInput" type="file" accept=".csv,text/csv" onchange="loadFile()">
+      </div>
+
+      <button class="ghost" onclick="previsualizar()">Previsualizar</button>
+
+      <div id="preview" style="display:none;margin-top:18px">
+        <h2>2 &middot; Revis&aacute; y sub&iacute;</h2>
+        <p id="resumen" style="font-size:13.5px;color:var(--muted);margin-bottom:8px"></p>
+        <div class="row" style="margin-bottom:8px">
+          <button id="upBtn" onclick="subir()">Subir certificados a Firebase</button>
+          <button class="ghost" onclick="logout()">Cerrar sesi&oacute;n</button>
+        </div>
+        <div id="log"></div>
+        <table id="tbl"><thead><tr><th>C&oacute;digo</th><th>Nombre</th><th>Curso</th><th>Horas</th><th>Fecha</th><th>Estado</th></tr></thead><tbody></tbody></table>
+      </div>
     </div>
   </div>
 </div>
@@ -83,7 +114,6 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app), db=getFirestore(app);
 window.fbLogin=(e,p)=>signInWithEmailAndPassword(auth,e,p);
 window.fbLogout=()=>signOut(auth);
-window.fbCheckCert=async(code)=>{ const s=await getDoc(doc(db,"certificates",code)); return s.exists(); };
 window.fbPutCert=async(code,data)=>{ await setDoc(doc(db,"certificates",code),{...data,issuedAt:serverTimestamp()},{merge:true}); };
 onAuthStateChanged(auth,u=>{
   document.getElementById('authBox').style.display = u?'none':'block';
@@ -91,73 +121,143 @@ onAuthStateChanged(auth,u=>{
 });
 </script>
 <script>
-const CERTS=[
-  {code:"ST-PBI-2026-45CC", name:"Sofía Beatriz Almeida Estigarribia"},
-  {code:"ST-PBI-2026-34C6", name:"Araceli Nathaly Almada Miranda"},
-  {code:"ST-PBI-2026-0491", name:"María Luisa Balbuena Duarte"},
-  {code:"ST-PBI-2026-075A", name:"Sara Bernal Meza"},
-  {code:"ST-PBI-2026-CEB3", name:"Sebastián Brugada Grasso"},
-  {code:"ST-PBI-2026-36F3", name:"Rosalba Elena Canela"},
-  {code:"ST-PBI-2026-4F67", name:"Karem Elizeche Gómez"},
-  {code:"ST-PBI-2026-400E", name:"Angelo Elli Mendoza"},
-  {code:"ST-PBI-2026-88A7", name:"Walter Escobar Villalba"},
-  {code:"ST-PBI-2026-C4C4", name:"Karen Esquivel Ojeda"},
-  {code:"ST-PBI-2026-2B3E", name:"María Belén Fanego Silvera"},
-  {code:"ST-PBI-2026-DB95", name:"Olavi Gómez Prado"},
-  {code:"ST-PBI-2026-44A9", name:"America González Sanabria"},
-  {code:"ST-PBI-2026-F354", name:"Carim Assad Huespe Martínez"},
-  {code:"ST-PBI-2026-F032", name:"Raul Ibarrola Britez"},
-  {code:"ST-PBI-2026-0A85", name:"Tania Insfrán Chenu"},
-  {code:"ST-PBI-2026-D437", name:"Romina Iriarte Cañete"},
-  {code:"ST-PBI-2026-0725", name:"Carlos López Espínola"},
-  {code:"ST-PBI-2026-EBDD", name:"Ana Louteiro"},
-  {code:"ST-PBI-2026-41F3", name:"Luis Alfredo Moran Fariña"},
-  {code:"ST-PBI-2026-8975", name:"Andrea Prieto Peralta"},
-  {code:"ST-PBI-2026-9F4A", name:"Laura Reinoso Cáceres"},
-  {code:"ST-PBI-2026-00F3", name:"Shirley Zarate Vera"}
-];
+let MODE='paste';
+let ROWS=[];
 
-// pintar la tabla al cargar
-const tb=document.querySelector('#tbl tbody');
-CERTS.forEach(c=>{
-  const tr=document.createElement('tr');
-  tr.innerHTML=`<td class="code">${c.code}</td><td>${c.name}</td><td><span class="st st-wait" id="st-${c.code}">en espera</span></td>`;
-  tb.appendChild(tr);
-});
+function setMode(m){
+  MODE=m;
+  document.getElementById('tabPaste').classList.toggle('on',m==='paste');
+  document.getElementById('tabFile').classList.toggle('on',m==='file');
+  document.getElementById('modePaste').style.display = m==='paste'?'block':'none';
+  document.getElementById('modeFile').style.display  = m==='file'?'block':'none';
+}
+
+function loadFile(){
+  const f=document.getElementById('fileInput').files[0];
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ document.getElementById('pasteBox').value=r.result; setMode('paste'); previsualizar(); };
+  r.readAsText(f,'utf-8');
+}
+
+function detectSep(line){
+  if(line.indexOf('\t')>=0) return '\t';
+  if(line.indexOf(';')>=0 && line.indexOf(',')<0) return ';';
+  return ',';
+}
+
+function parseLine(line, sep){
+  const out=[]; let cur='', q=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){ if(q && line[i+1]==='"'){ cur+='"'; i++; } else q=!q; }
+    else if(ch===sep && !q){ out.push(cur); cur=''; }
+    else cur+=ch;
+  }
+  out.push(cur);
+  return out.map(s=>s.trim());
+}
+
+function normHeader(h){
+  const k=h.toLowerCase().replace(/[\s_]/g,'');
+  const map={
+    code:'code', codigo:'code', 'c\u00f3digo':'code',
+    studentname:'studentName', nombre:'studentName', nombrecompleto:'studentName', alumno:'studentName',
+    coursetitle:'courseTitle', curso:'courseTitle', capacitacion:'courseTitle', 'capacitaci\u00f3n':'courseTitle',
+    hours:'hours', horas:'hours', cargahoraria:'hours',
+    issuedate:'issueDate', fecha:'issueDate', fechadeemision:'issueDate', 'fechadeemisi\u00f3n':'issueDate',
+    courseid:'courseId', idcurso:'courseId',
+    modules:'modules', modulos:'modules', 'm\u00f3dulos':'modules'
+  };
+  return map[k]||null;
+}
+
+function previsualizar(){
+  const raw=document.getElementById('pasteBox').value.trim();
+  const log=document.getElementById('log');
+  if(!raw){ alert('Peg\u00e1 la planilla o sub\u00ed un archivo primero.'); return; }
+  const lines=raw.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2){ alert('La planilla necesita una fila de encabezados y al menos una fila de datos.'); return; }
+
+  const sep=detectSep(lines[0]);
+  const headersRaw=parseLine(lines[0],sep);
+  const headers=headersRaw.map(normHeader);
+
+  if(!headers.includes('code') || !headers.includes('studentName')){
+    alert('No encuentro las columnas obligatorias. Asegurate de que la primera fila tenga al menos \u00abcode\u00bb y \u00abstudentName\u00bb (o \u00abcodigo\u00bb y \u00abnombre\u00bb).');
+    return;
+  }
+
+  ROWS=[];
+  const errs=[];
+  for(let i=1;i<lines.length;i++){
+    const cells=parseLine(lines[i],sep);
+    const obj={};
+    headers.forEach((h,idx)=>{ if(h) obj[h]=(cells[idx]||'').trim(); });
+    if(!obj.code){ errs.push('Fila '+(i+1)+': sin c\u00f3digo, se omite.'); continue; }
+    if(!obj.studentName){ errs.push('Fila '+(i+1)+' ('+obj.code+'): sin nombre.'); }
+    if(obj.modules){ obj.modules=obj.modules.split(';').map(s=>s.trim()).filter(Boolean); }
+    ROWS.push(obj);
+  }
+
+  const seen={}, dups=[];
+  ROWS.forEach(r=>{ if(seen[r.code]) dups.push(r.code); seen[r.code]=1; });
+
+  const tb=document.querySelector('#tbl tbody'); tb.innerHTML='';
+  ROWS.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td class="code">'+esc(r.code)+'</td><td>'+esc(r.studentName||'\u2014')+'</td>'+
+      '<td>'+esc(r.courseTitle||'\u2014')+'</td><td>'+esc(r.hours||'\u2014')+'</td><td>'+esc(r.issueDate||'\u2014')+'</td>'+
+      '<td><span class="st st-wait" id="st-'+cssId(r.code)+'">en espera</span></td>';
+    tb.appendChild(tr);
+  });
+
+  document.getElementById('preview').style.display='block';
+  let resumen=ROWS.length+' certificado(s) detectado(s).';
+  if(dups.length) resumen+=' \u26a0 C\u00f3digos duplicados: '+[...new Set(dups)].join(', ')+'.';
+  document.getElementById('resumen').innerHTML=resumen + (errs.length?'<div class="err-detail">'+errs.join('<br>')+'</div>':'');
+  log.textContent='';
+}
+
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function cssId(s){return (s||'').replace(/[^a-zA-Z0-9]/g,'_');}
 
 async function login(){
   const e=document.getElementById('email').value.trim();
   const p=document.getElementById('pass').value;
   const err=document.getElementById('autherr');err.textContent='';
   try{ await window.fbLogin(e,p); }
-  catch(ex){ err.textContent='No se pudo iniciar sesión. Verificá correo y contraseña, y que la cuenta sea admin.'; }
+  catch(ex){ err.textContent='No se pudo iniciar sesi\u00f3n. Verific\u00e1 correo y contrase\u00f1a, y que la cuenta sea admin.'; }
 }
 async function logout(){ await window.fbLogout(); }
 
 async function subir(){
-  const fecha=document.getElementById('fecha').value.trim();
-  const curso=document.getElementById('curso').value.trim();
-  const horas=document.getElementById('horas').value.trim();
+  if(!ROWS.length){ alert('Previsualiz\u00e1 la planilla antes de subir.'); return; }
   const log=document.getElementById('log');
   const btn=document.getElementById('upBtn');
-  if(!fecha){ log.textContent='⚠ Cargá la fecha de emisión antes de subir.'; return; }
   btn.disabled=true; let ok=0, err=0;
-  for(const c of CERTS){
-    const cell=document.getElementById('st-'+c.code);
+  for(const r of ROWS){
+    const cell=document.getElementById('st-'+cssId(r.code));
     try{
-      await window.fbPutCert(c.code,{
-        studentName:c.name, courseId:"powerbi", courseTitle:curso,
-        hours:horas, issueDate:fecha,
-        modules:["Fundamentos y Estructura de Datos","Conectividad y Gestión de Fuentes","ETL y Preparación con Power Query","Modelado de Datos Relacional","Cálculo Avanzado con DAX","Visualización e Interactividad"]
-      });
-      cell.className='st st-ok'; cell.textContent='✓ cargado'; ok++;
-    }catch(ex){ cell.className='st st-err'; cell.textContent='error'; err++; }
-    log.textContent=`Subidos: ${ok} · Errores: ${err} · de ${CERTS.length}`;
+      const data={
+        studentName:r.studentName||'',
+        courseTitle:r.courseTitle||'',
+        hours:r.hours||'',
+        issueDate:r.issueDate||''
+      };
+      if(r.courseId) data.courseId=r.courseId;
+      if(r.modules && r.modules.length) data.modules=r.modules;
+      await window.fbPutCert(r.code,data);
+      if(cell){ cell.className='st st-ok'; cell.textContent='\u2713 cargado'; } ok++;
+    }catch(ex){ if(cell){ cell.className='st st-err'; cell.textContent='error'; } err++; }
+    log.textContent='Subidos: '+ok+' \u00b7 Errores: '+err+' \u00b7 de '+ROWS.length;
   }
   btn.disabled=false;
-  log.textContent=`Listo. ${ok} certificados cargados${err?`, ${err} con error`:''}. Ya podés verificarlos en verificar.html`;
+  log.textContent='Listo. '+ok+' certificado(s) cargado(s)'+(err?', '+err+' con error':'')+'. Ya pod\u00e9s verificarlos en la p\u00e1gina de verificaci\u00f3n.';
 }
+
 window.login=login; window.logout=logout; window.subir=subir;
+window.setMode=setMode; window.loadFile=loadFile; window.previsualizar=previsualizar;
 </script>
 </body>
 </html>
