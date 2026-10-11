@@ -62,6 +62,25 @@
   .hero-stat-num{font-size:30px;font-weight:800;color:var(--accent-bright);line-height:1;margin-bottom:4px}
   .hero-stat-label{font-size:10.5px;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase}
   @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+
+  /* ── Reveal al hacer scroll (sutil fade + slide) ── */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1)}
+  .reveal.visible{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.08s}
+  .reveal.d2{transition-delay:.16s}
+  .reveal.d3{transition-delay:.24s}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+
+  /* ── Tarjeta de curso: foto con zoom sutil en hover ── */
+  .ccard .cthumb{transition:transform .5s cubic-bezier(.22,.61,.36,1)}
+  .ccard:hover .cthumb{transform:scale(1.06)}
+  .ccard{overflow:hidden}
+
+  /* ── Brillo que recorre los botones principales ── */
+  .cbtn::after,.hero-cta.primary::after{content:"";position:absolute;top:0;left:-120%;width:60%;height:100%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);transition:left .6s ease}
+  .cbtn:hover::after,.hero-cta.primary:hover::after{left:130%}
+  .hero-cta.primary{position:relative;overflow:hidden}
   @media(max-width:760px){.hero-content{padding:130px 22px 160px}.hero-stats{left:16px;right:16px;width:calc(100% - 32px);bottom:20px;flex-wrap:wrap}
     .hero-stat{flex:1 1 45%;padding:14px;border-right:none}.hero-stat-num{font-size:22px}}
   /* section */
@@ -93,6 +112,13 @@
   .cbtn{position:relative;overflow:hidden;background:var(--green);color:#fff;text-align:center;padding:13px;border-radius:10px;font-weight:600;font-size:14.5px;transition:background .25s;display:flex;align-items:center;justify-content:center;gap:7px}
   .cbtn:hover{background:var(--green-soft)}
   .cbtn svg{width:15px;height:15px}
+  /* estado «Próximamente» en la vitrina */
+  .ccard.soon{cursor:default}
+  .ccard.soon:hover{transform:none}
+  .ccard.soon .cthumb{filter:grayscale(.4)}
+  .clvl.soon{background:var(--gold);border-color:var(--gold);color:#fff}
+  .cbtn.soon{background:rgba(169,132,47,.14);color:var(--gold);cursor:default}
+  .cbtn.soon:hover{background:rgba(169,132,47,.14)}
   /* steps */
   .steps{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:46px 34px}
   .steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px;margin-top:30px}
@@ -169,15 +195,15 @@
     </div>
   </div>
   <div class="hero-stats">
-    <div class="hero-stat"><div class="hero-stat-num"><span class="count" data-target="120">0</span>+</div><div class="hero-stat-label">Profesionales formados</div></div>
+    <div class="hero-stat"><div class="hero-stat-num"><span class="count" data-target="240">0</span>+</div><div class="hero-stat-label">Profesionales formados</div></div>
     <div class="hero-stat"><div class="hero-stat-num"><span class="count" data-target="3">0</span></div><div class="hero-stat-label">Capacitaciones</div></div>
-    <div class="hero-stat"><div class="hero-stat-num"><span class="count" data-target="75">0</span>+</div><div class="hero-stat-label">Horas de contenido</div></div>
+    <div class="hero-stat"><div class="hero-stat-num"><span class="count" data-target="100">0</span>+</div><div class="hero-stat-label">Horas de contenido</div></div>
     <div class="hero-stat"><div class="hero-stat-num"><span class="count" data-target="100">0</span>%</div><div class="hero-stat-label">Online</div></div>
   </div>
 </header>
 
 <div class="section" id="cursos">
-  <div class="sec-head">
+  <div class="sec-head reveal">
     <div class="eyebrow">Catálogo 2026</div>
     <h2>Nuestras capacitaciones</h2>
     <p>Programas diseñados para llevarte de los fundamentos a la aplicación profesional.</p>
@@ -186,16 +212,16 @@
 </div>
 
 <div class="section" style="padding-top:0">
-  <div class="steps">
+  <div class="steps reveal">
     <div class="sec-head" style="margin-bottom:0">
       <div class="eyebrow">¿Cómo accedo?</div>
       <h2>Inscribirte es simple</h2>
     </div>
     <div class="steps-grid">
-      <div class="step"><div class="num">1</div><h4>Elegí tu curso</h4><p>Mirá el programa completo y los detalles de la capacitación que te interesa.</p></div>
-      <div class="step"><div class="num">2</div><h4>Solicitá acceso</h4><p>Tocá "Solicitar acceso" y te escribimos por WhatsApp con el paso a paso.</p></div>
-      <div class="step"><div class="num">3</div><h4>Confirmá el pago</h4><p>Enviás tu comprobante y coordinamos todo de forma personalizada.</p></div>
-      <div class="step"><div class="num">4</div><h4>Empezá a cursar</h4><p>Te habilitamos en el campus y accedés a videos, materiales y tu certificado.</p></div>
+      <div class="step reveal"><div class="num">1</div><h4>Elegí tu curso</h4><p>Mirá el programa completo y los detalles de la capacitación que te interesa.</p></div>
+      <div class="step reveal d1"><div class="num">2</div><h4>Solicitá acceso</h4><p>Tocá "Solicitar acceso" y te escribimos por WhatsApp con el paso a paso.</p></div>
+      <div class="step reveal d2"><div class="num">3</div><h4>Confirmá el pago</h4><p>Enviás tu comprobante y coordinamos todo de forma personalizada.</p></div>
+      <div class="step reveal d3"><div class="num">4</div><h4>Empezá a cursar</h4><p>Te habilitamos en el campus y accedés a videos, materiales y tu certificado.</p></div>
     </div>
   </div>
 </div>
@@ -247,7 +273,9 @@ const ICON_CLOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const ICON_BOOK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
 const ICON_CAP='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>';
 const ICON_ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
-const CURSOS = [
+// Array de respaldo (fallback). La vitrina intenta leer los cursos desde Firebase
+// al cargar; si Firebase falla o está vacío, usa este array. NO borrar.
+let CURSOS = [
   { id:"arcgis", cat:"SIG · ArcGIS Pro & Online", title:"Capacitación en SIG — ArcGIS Pro & Online",
     img:"curso-arcgis.png", lvl:"Certificable",
     desc:"Gestión territorial y visualización avanzada para el sector agroforestal. 6 módulos, 25 horas.",
@@ -261,28 +289,73 @@ const CURSOS = [
     desc:"Del dato a la visualización: conectar, limpiar, modelar y crear tableros. 6 módulos, 20 horas.",
     hours:"20 h", modulos:6 }
 ];
-const g=document.getElementById('grid');
-CURSOS.forEach(c=>{
-  const a=document.createElement('a');a.className='ccard';a.href='curso.html?c='+c.id;
-  a.innerHTML=`<div class="cthumb" style="background-image:url('${c.img}')"><span class="clvl">${c.lvl}</span></div>
-    <div class="cbody"><div class="cat">${c.cat}</div><h3>${c.title}</h3>
-      <div class="desc">${c.desc}</div>
-      <div class="cmeta"><span>${ICON_CLOCK} ${c.hours}</span><span>${ICON_BOOK} ${c.modulos} módulos</span><span>${ICON_CAP} Certificado</span></div>
-      <div class="cbtn">Ver este curso ${ICON_ARROW}</div></div>`;
-  g.appendChild(a);
-});
+
+function renderCursos(){
+  const g=document.getElementById('grid');
+  if(!g) return;
+  const lista = CURSOS
+    .filter(c => c.estado !== 'oculto')
+    .sort((a,b)=> (typeof a.orden==='number' && typeof b.orden==='number') ? a.orden-b.orden : 0);
+  g.innerHTML='';
+  lista.forEach((c,i)=>{
+    const soon = c.estado === 'proximamente';
+    const nMods = Array.isArray(c.modules) ? c.modules.length : (c.modulos||0);
+    const el = document.createElement(soon ? 'div' : 'a');
+    el.className = 'ccard reveal' + (soon ? ' soon' : '') + (i>0?(' d'+Math.min(i,3)):'');
+    if(!soon){ el.href = 'curso.html?c=' + c.id; }
+    const badge = soon
+      ? `<span class="clvl soon">Próximamente</span>`
+      : `<span class="clvl">${c.lvl || 'Certificable'}</span>`;
+    const btn = soon
+      ? `<div class="cbtn soon">Disponible próximamente</div>`
+      : `<div class="cbtn">Ver este curso ${ICON_ARROW}</div>`;
+    el.innerHTML=`<div class="cthumb" style="background-image:url('${c.img||''}');background-color:${c.color||'#245a50'}">${badge}</div>
+      <div class="cbody"><div class="cat">${c.cat||''}</div><h3>${c.title||''}</h3>
+        <div class="desc">${c.desc||''}</div>
+        <div class="cmeta"><span>${ICON_CLOCK} ${c.hours||'—'}</span><span>${ICON_BOOK} ${nMods} módulos</span><span>${ICON_CAP} Certificado</span></div>
+        ${btn}</div>`;
+    g.appendChild(el);
+  });
+}
+renderCursos();
+window.setCursos = function(arr){ CURSOS = arr; renderCursos(); };
 // glow del borde que sigue al cursor en cada tarjeta
-g.addEventListener('pointermove',e=>{
-  const card=e.target.closest('.ccard');
-  if(!card)return;
-  const r=card.getBoundingClientRect();
-  card.style.setProperty('--gx',(e.clientX-r.left)+'px');
-  card.style.setProperty('--gy',(e.clientY-r.top)+'px');
-});
+(function(){
+  const grid=document.getElementById('grid');
+  if(!grid) return;
+  grid.addEventListener('pointermove',e=>{
+    const card=e.target.closest('.ccard');
+    if(!card)return;
+    const r=card.getBoundingClientRect();
+    card.style.setProperty('--gx',(e.clientX-r.left)+'px');
+    card.style.setProperty('--gy',(e.clientY-r.top)+'px');
+  });
+})();
 
 // hero: zoom de la imagen al cargar
 const hero=document.getElementById('hero');
 requestAnimationFrame(()=>hero&&hero.classList.add('loaded'));
+
+// ── Reveal al hacer scroll: cada .reveal aparece al entrar en pantalla ──
+let revealIO=null;
+function scanReveal(){
+  const items=document.querySelectorAll('.reveal:not(.visible)');
+  if(!('IntersectionObserver' in window)){ items.forEach(el=>el.classList.add('visible')); return; }
+  if(!revealIO){
+    revealIO=new IntersectionObserver((ents)=>{
+      ents.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('visible'); revealIO.unobserve(en.target); } });
+    },{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+  }
+  items.forEach(el=>{
+    const r=el.getBoundingClientRect();
+    if(r.top < (window.innerHeight||document.documentElement.clientHeight)) el.classList.add('visible'); // ya visibles: mostrar
+    else revealIO.observe(el); // los de más abajo: al hacer scroll
+  });
+}
+scanReveal();
+// re-escanear cuando Firebase re-renderiza las tarjetas
+const _setCursos=window.setCursos;
+window.setCursos=function(arr){ _setCursos(arr); scanReveal(); };
 
 // contador animado de los stats (corre una vez al entrar en pantalla)
 function runCount(el){
@@ -295,12 +368,40 @@ function runCount(el){
   requestAnimationFrame(tick);
 }
 const counts=document.querySelectorAll('.count');
+function startCount(el){ if(el.dataset.done)return; el.dataset.done='1'; runCount(el); }
+function enPantalla(el){ const r=el.getBoundingClientRect(); return r.top < (window.innerHeight||document.documentElement.clientHeight) && r.bottom > 0; }
+function arrancarVisibles(){ counts.forEach(c=>{ if(enPantalla(c)) startCount(c); }); }
+arrancarVisibles();
+window.addEventListener('load', arrancarVisibles);
+setTimeout(arrancarVisibles, 600);
 if('IntersectionObserver' in window){
   const io=new IntersectionObserver((ents)=>{
-    ents.forEach(en=>{ if(en.isIntersecting){ runCount(en.target); io.unobserve(en.target); } });
-  },{threshold:.5});
+    ents.forEach(en=>{ if(en.isIntersecting){ startCount(en.target); io.unobserve(en.target); } });
+  },{threshold:.3});
   counts.forEach(c=>io.observe(c));
-}else{ counts.forEach(runCount); }
+}
+</script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyBrDGWcuej0C3ROUDSuVjnYc3Nsz8u4DfI",
+  authDomain: "soiltech-academy.firebaseapp.com",
+  projectId: "soiltech-academy",
+  storageBucket: "soiltech-academy.firebasestorage.app",
+  messagingSenderId: "152682364840",
+  appId: "1:152682364840:web:98603b614e69c1a0e5e79d"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
+(async ()=>{
+  try{
+    const snap = await getDocs(collection(db,"courses"));
+    if(!snap.empty){
+      const fromFb = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+      if(fromFb.length && typeof window.setCursos==='function'){ window.setCursos(fromFb); }
+    }
+  }catch(e){ /* si falla, queda el array de respaldo ya renderizado */ }
+})();
 </script>
 </body>
 </html>

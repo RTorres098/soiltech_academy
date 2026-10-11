@@ -72,6 +72,11 @@
   .course-thumb::after{content:"";position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0 20h40M20 0v40' stroke='rgba(255,255,255,.07)' stroke-width='1'/%3E%3C/svg%3E");opacity:.7}
   .lvl{position:absolute;top:12px;left:12px;z-index:2;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:5px 11px;border-radius:30px;backdrop-filter:blur(4px);background:rgba(14,42,40,.5);border:1px solid rgba(255,255,255,.2);color:#fff}
   .badge-mod{position:absolute;top:12px;right:12px;z-index:2;font-size:11px;font-weight:600;padding:5px 11px;border-radius:30px;background:rgba(255,255,255,.92);color:var(--green-deep)}
+  .course-card.soon{cursor:default}
+  .course-card.soon .course-thumb{filter:grayscale(.35)}
+  .course-card.soon:hover{transform:none;box-shadow:0 4px 16px rgba(34,82,53,.05)}
+  .soon-note{margin-top:8px;font-size:13px;font-weight:600;color:var(--gold);display:flex;align-items:center;gap:6px}
+  .soon-note::before{content:"◷";font-size:15px}
   .course-body{padding:20px}
   .course-body .cat{font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
   .course-body h3{font-size:20px;font-weight:600;line-height:1.22;margin-bottom:8px}
@@ -985,7 +990,19 @@ initState();
 
 /* ---------- helpers ---------- */
 const moduleComplete = m => m._seen.every(Boolean) && m._quiz!==null && m._quiz>=PASS && m._task==='ok';
-const courseProgress = c => Math.round(c.modules.filter(moduleComplete).length / c.modules.length * 100);
+// progreso granular: cada tema visto, cada cuestionario aprobado y cada tarea
+// aprobada cuentan como una unidad del total del curso. Sube con cada avance.
+const courseProgress = c => {
+  let total=0, done=0;
+  c.modules.forEach(m=>{
+    const nTemas=m._seen.length;
+    total += nTemas + 2;                     // temas + cuestionario + tarea
+    done  += m._seen.filter(Boolean).length; // temas vistos
+    if(m._quiz!==null && m._quiz>=PASS) done++;   // cuestionario aprobado
+    if(m._task==='ok') done++;                    // tarea aprobada
+  });
+  return total ? Math.round(done/total*100) : 0;
+};
 const canCertify = c => c.modules.every(moduleComplete);
 
 /* ---------- instructores ---------- */
@@ -1128,7 +1145,8 @@ function applyRoleVisibility(){
 let MY_COURSES=[];   // [courseId] habilitados para mi correo
 async function renderGrid(){
   if(USER.email){ MY_COURSES = await window.fbMyCourses(USER.email); }
-  const active = COURSES.filter(c => MY_COURSES.includes(c.id));
+  // el alumno ve sus cursos habilitados, menos los ocultos; «próximamente» se ve sin poder entrar
+  const active = COURSES.filter(c => MY_COURSES.includes(c.id) && c.estado!=='oculto');
 
   const mis=document.getElementById('courseGrid'); mis.innerHTML='';
   if(active.length===0){
@@ -1137,17 +1155,28 @@ async function renderGrid(){
       <p style="margin-top:6px">Para acceder a un curso, solicitá el acceso por WhatsApp desde la página de SoilTech. Una vez confirmado, aparecerá acá.</p></div>`;
   } else {
     active.forEach((c,idx)=>{
+      const soon = c.estado==='proximamente';
       const done=c.modules.filter(moduleComplete).length, p=courseProgress(c);
-      const card=document.createElement('div');card.className='course-card';
-      card.style.animationDelay=(idx*0.08)+'s';card.onclick=()=>openCourse(c.id);
-      card.innerHTML=`<div class="course-thumb" style="background:${c.color}">
-          <span class="lvl">Certificable</span><span class="badge-mod">${c.modules.length} módulos</span>
-          <span class="glyph">${c.glyph}</span></div>
+      const card=document.createElement('div');card.className='course-card'+(soon?' soon':'');
+      card.style.animationDelay=(idx*0.08)+'s';
+      card.onclick=()=> soon ? alert('Esta capacitación estará disponible próximamente.') : openCourse(c.id);
+      const badge = soon ? `<span class="lvl" style="background:var(--gold)">Próximamente</span>`
+                         : `<span class="lvl">Certificable</span>`;
+      const footer = soon
+        ? `<div class="soon-note">Disponible próximamente</div>`
+        : `<div class="progress-label"><span>${done}/${c.modules.length} módulos completos</span><span>${p}%</span></div>
+           <div class="progress"><i style="width:${p}%"></i></div>`;
+      const thumbStyle = c.img
+        ? `background-image:url('${c.img}');background-size:cover;background-position:center`
+        : `background:${c.color}`;
+      const glyphEl = c.img ? '' : `<span class="glyph">${c.glyph}</span>`;
+      card.innerHTML=`<div class="course-thumb" style="${thumbStyle}">
+          ${badge}<span class="badge-mod">${c.modules.length} módulos</span>
+          ${glyphEl}</div>
         <div class="course-body"><div class="cat">${c.cat}</div><h3>${c.title}</h3>
           <div class="desc">${c.desc}</div>
           <div class="course-meta"><span>⏱ ${c.hours}</span><span>📚 ${c.modules.length} módulos</span><span>🎓 Certificación</span></div>
-          <div class="progress-label"><span>${done}/${c.modules.length} módulos completos</span><span>${p}%</span></div>
-          <div class="progress"><i style="width:${p}%"></i></div></div>`;
+          ${footer}</div>`;
       mis.appendChild(card);
     });
   }
@@ -1159,6 +1188,11 @@ async function openCourse(id){
   // un alumno solo entra si su correo está habilitado (staff entra siempre)
   if(ROLE==='alumno' && !MY_COURSES.includes(id)){
     alert('Tu correo aún no está habilitado en esta capacitación.');
+    return;
+  }
+  const cObj=COURSES.find(x=>x.id===id);
+  if(ROLE==='alumno' && cObj && cObj.estado==='proximamente'){
+    alert('Esta capacitación estará disponible próximamente.');
     return;
   }
   curCourse=COURSES.find(c=>c.id===id);
@@ -1377,9 +1411,11 @@ function toggleAll(){
     else{acc.classList.add('open');body.style.maxHeight=body.scrollHeight+'px';}
   });
 }
-function refresh(openIdx){ // re-render keeping a module open
+function refresh(openIdx){ // re-render keeping a module open y preservando el scroll
+  const y=window.scrollY;
   renderDetail();
-  if(openIdx!==undefined) setTimeout(()=>openAcc(openIdx),20);
+  window.scrollTo(0,y);
+  if(openIdx!==undefined) setTimeout(()=>{ openAcc(openIdx); window.scrollTo(0,y); },20);
 }
 
 /* ---------- temas (video) ---------- */
@@ -1905,8 +1941,13 @@ async function renderAdminPanel(){
   let body;
 
   if(adminTab==='cursos'){
+    const estadoPill=(e)=>{
+      if(e==='proximamente') return '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(169,132,47,.15);color:var(--gold);vertical-align:middle">PRÓXIMAMENTE</span>';
+      if(e==='oculto') return '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(107,98,88,.15);color:var(--muted);vertical-align:middle">OCULTO</span>';
+      return '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(52,166,120,.15);color:var(--green);vertical-align:middle">DISPONIBLE</span>';
+    };
     const rows=COURSES.map(c=>`<div class="data-row">
-        <div class="dr-main"><b>${c.title}</b><span>${c.cat} · ${c.modules.length} módulos · ${c.hours}</span></div>
+        <div class="dr-main"><b>${c.title} ${estadoPill(c.estado)}</b><span>${c.cat} · ${c.modules.length} módulos · ${c.hours}</span></div>
         <div class="row-actions">
           <button class="act-btn" onclick="openAccess('${c.id}')">Gestionar accesos</button>
           <button class="act-btn ghost" onclick="openCourseInfo('${c.id}')">Precio y programa</button>
@@ -2024,11 +2065,22 @@ function openCourseEditor(courseId){
     </div>
     <div class="ce-row">
       <div class="ce-field"><label>Carga horaria</label><input id="ce-hours" value="${c?escAttr(c.hours):''}" placeholder="25 h"></div>
-      <div class="ce-field"><label>Imagen (archivo en el repo)</label><input id="ce-img" value="${c&&c.img?escAttr(c.img):''}" placeholder="curso-arcgis.png"></div>
+      <div class="ce-field"><label>Imagen de la tarjeta</label><input id="ce-img" value="${c&&c.img?escAttr(c.img):''}" placeholder="curso-arcgis.png o https://...">
+        <p style="font-size:11px;color:var(--muted);margin:-6px 0 0">Nombre del archivo subido al repo (ej: curso-qgis.jpg) o una URL completa de imagen. Si lo dejás vacío, se usa el color de acento.</p></div>
     </div>
-    <div class="ce-field">
-      <label>Color de acento</label>
-      <select id="ce-color">${COURSE_COLORS.map(col=>`<option value="${col}" ${c&&c.color===col?'selected':''}>${col}</option>`).join('')}</select>
+    <div class="ce-row">
+      <div class="ce-field">
+        <label>Color de acento</label>
+        <select id="ce-color">${COURSE_COLORS.map(col=>`<option value="${col}" ${c&&c.color===col?'selected':''}>${col}</option>`).join('')}</select>
+      </div>
+      <div class="ce-field">
+        <label>Estado en el catálogo</label>
+        <select id="ce-estado">
+          <option value="disponible" ${(!c||c.estado==='disponible'||!c.estado)?'selected':''}>Disponible (se puede cursar)</option>
+          <option value="proximamente" ${c&&c.estado==='proximamente'?'selected':''}>Próximamente (visible, no se cursa)</option>
+          <option value="oculto" ${c&&c.estado==='oculto'?'selected':''}>Oculto (no aparece)</option>
+        </select>
+      </div>
     </div>
     <div class="ce-field">
       <label>Qué incluye (uno por línea)</label>
@@ -2055,6 +2107,7 @@ async function saveCourseEditor(){
   const hours=(document.getElementById('ce-hours').value||'').trim();
   const img=(document.getElementById('ce-img').value||'').trim();
   const color=document.getElementById('ce-color').value;
+  const estado=document.getElementById('ce-estado').value;
   const incluye=(document.getElementById('ce-incluye').value||'').split('\n').map(x=>x.trim()).filter(Boolean);
 
   if(!id){ msg.textContent='Falta el identificador.'; return; }
@@ -2064,11 +2117,18 @@ async function saveCourseEditor(){
   if(isNew && COURSES.some(c=>c.id===id)){ msg.textContent='Ya existe una capacitación con ese identificador.'; return; }
 
   const existing = ceEditingId ? COURSES.find(c=>c.id===ceEditingId) : null;
+  const mods = existing && existing.modules ? existing.modules : [];
+  // aviso (no bloquea): marcar Disponible un curso sin módulos
+  if(estado==='disponible' && mods.length===0){
+    if(!confirm('Estás marcando esta capacitación como DISPONIBLE pero todavía no tiene módulos cargados. Los alumnos la verán como un curso que pueden empezar, pero estará vacío.\n\n¿Querés publicarla igual?')) {
+      msg.style.color='var(--muted)'; msg.textContent='Guardado cancelado. Podés cambiar el estado a «Próximamente».'; return;
+    }
+  }
   const course = {
-    id, cat, title, desc, hours, img, color,
+    id, cat, title, desc, hours, img, color, estado,
     glyph: existing && existing.glyph ? existing.glyph : '',
     incluye,
-    modules: existing && existing.modules ? existing.modules : [],
+    modules: mods,
     orden: existing && typeof existing.orden==='number' ? existing.orden : COURSES.length
   };
 
@@ -2101,21 +2161,39 @@ async function deleteCourse(courseId){
 
 /* ============================================================
    FASE 3a/3b — Editor de contenido con formularios EN LÍNEA
-   módulos · temas (video) · materiales · tarea
+   módulos colapsables · secciones colapsables · scroll preservado
    ============================================================ */
 let contentCourseId=null;
-// EDIT guarda qué se está editando inline: {kind, mi, ti/fi, isNew}
-// kind: 'modulo' | 'tema' | 'mat' | 'tarea' | null
 let EDIT=null;
+// estado de expansión: módulos abiertos y secciones abiertas por módulo
+let OPEN={ mod:{}, sec:{} };   // OPEN.mod[mi]=true ; OPEN.sec[mi+'-'+'temas'|'mats'|'quiz']=true
+let QUIZDRAFT=null;
 
 function openContentEditor(courseId){
   contentCourseId=courseId;
-  EDIT=null;
+  EDIT=null; QUIZDRAFT=null;
+  OPEN={ mod:{}, sec:{} };   // todos contraídos al abrir
   renderContentEditor();
   document.getElementById('courseModal').classList.add('show');
 }
-function closeContentEditor(){ document.getElementById('courseModal').classList.remove('show'); EDIT=null; }
+function closeContentEditor(){ document.getElementById('courseModal').classList.remove('show'); EDIT=null; QUIZDRAFT=null; }
 function curContentCourse(){ return COURSES.find(c=>c.id===contentCourseId); }
+
+// el contenedor que scrollea dentro del modal (para preservar la posición)
+function scrollHost(){ return document.getElementById('ce-scroll'); }
+
+// re-render preservando la posición de scroll
+function reRender(){
+  const host=scrollHost();
+  const y=host?host.scrollTop:0;
+  renderContentEditor();
+  const nh=scrollHost();
+  if(nh) nh.scrollTop=y;
+}
+
+function toggleMod(mi){ OPEN.mod[mi]=!OPEN.mod[mi]; reRender(); }
+function toggleSec(mi,sec){ const k=mi+'-'+sec; OPEN.sec[k]=!OPEN.sec[k]; reRender(); }
+function secOpen(mi,sec){ return !!OPEN.sec[mi+'-'+sec]; }
 
 function inputRow(label, id, value, ph){
   return `<div class="ce-field"><label>${label}</label><input id="${id}" value="${escAttr(value||'')}" placeholder="${escAttr(ph||'')}"></div>`;
@@ -2131,7 +2209,19 @@ function formButtons(saveFn, label){
     <button class="act-btn" onclick="${saveFn}">${label||'Guardar'}</button>
     <button class="act-btn ghost" onclick="cancelEdit()">Cancelar</button></div>`;
 }
-function cancelEdit(){ EDIT=null; QUIZDRAFT=null; renderContentEditor(); }
+function cancelEdit(){ EDIT=null; QUIZDRAFT=null; reRender(); }
+
+// chevron para colapsar
+function chev(open){
+  return `<span style="display:inline-block;transition:transform .2s;transform:rotate(${open?180:0}deg);color:var(--muted)">▾</span>`;
+}
+// encabezado de sección colapsable
+function secHead(mi,sec,label,count){
+  const open=secOpen(mi,sec);
+  return `<div onclick="toggleSec(${mi},'${sec}')" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:7px 12px;margin-top:4px;
+       font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);user-select:none">
+       ${chev(open)} ${label} <span style="color:var(--muted);font-weight:600">(${count})</span></div>`;
+}
 
 // formulario de una pregunta (inline). qi=-1 => nueva
 function quizForm(mi,qi,q){
@@ -2156,7 +2246,29 @@ function renderContentEditor(){
   if(!Array.isArray(c.modules)) c.modules=[];
 
   const mods = c.modules.length ? c.modules.map((m,mi)=>{
-    // ---- bloque de edición de MÓDULO (inline) ----
+    const nTemas=(m.temas||[]).length, nMats=(m.mats||[]).length, nQuiz=(m.quiz||[]).length;
+    const modOpen=!!OPEN.mod[mi];
+    // resumen para el encabezado
+    const resumen=`${nTemas} tema${nTemas===1?'':'s'} · ${nMats} material${nMats===1?'':'es'} · ${nQuiz} pregunta${nQuiz===1?'':'s'}`;
+
+    // ---- encabezado del módulo (clic para expandir/contraer) ----
+    const head=`<div class="tbl-head" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div onclick="toggleMod(${mi})" style="cursor:pointer;flex:1;min-width:0;user-select:none;display:flex;align-items:center;gap:9px">
+          ${chev(modOpen)}
+          <div style="min-width:0">
+            <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Módulo ${mi+1}: ${escHtml(m.t||'(sin título)')}</div>
+            <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:none;letter-spacing:0">${resumen}</div>
+          </div>
+        </div>
+        <span style="display:flex;gap:6px;flex:none">
+          <button class="act-btn ghost" onclick="editModulo(${mi})">Editar información</button>
+          <button class="act-btn ghost" onclick="moveModulo(${mi},-1)">↑</button>
+          <button class="act-btn ghost" onclick="moveModulo(${mi},1)">↓</button>
+          <button class="act-btn danger" onclick="delModulo(${mi})">Borrar</button>
+        </span>
+      </div>`;
+
+    // form de edición de la info del módulo (aparece aunque esté contraído)
     let moduloForm='';
     if(EDIT && EDIT.kind==='modulo' && EDIT.mi===mi){
       moduloForm=formBox(
@@ -2169,125 +2281,130 @@ function renderContentEditor(){
       );
     }
 
-    // ---- temas ----
-    const temas=(m.temas||[]).map((t,ti)=>{
-      const titulo=temaTitulo(t), vid=temaVideoId(t);
-      if(EDIT && EDIT.kind==='tema' && EDIT.mi===mi && EDIT.ti===ti){
-        return formBox(
-          inputRow('Título del tema','f-tema-t',titulo,'Ej: Interfaz de ArcGIS Pro')+
-          inputRow('Enlace del video de Vimeo','f-tema-v',temaVideoRaw(t),'https://vimeo.com/123456789/abc123')+
-          `<p style="font-size:11.5px;color:var(--muted);margin:-6px 0 8px">IMPORTANTE: pegá el enlace COMPLETO de Vimeo (incluye el código de privacidad después del número, ej: vimeo.com/123456789/abc123). Sin ese código los videos privados no se ven. Dejalo vacío si todavía no tenés el video.</p>`+
-          formButtons(`saveTema(${mi},${ti})`)
+    // si el módulo está contraído, solo encabezado (+ form de info si se está editando)
+    if(!modOpen){
+      return `<div class="data-card" style="margin-bottom:12px">${head}${moduloForm}</div>`;
+    }
+
+    // ---- TEMAS ----
+    const temasOpen=secOpen(mi,'temas');
+    let temasBody='';
+    if(temasOpen){
+      const temas=(m.temas||[]).map((t,ti)=>{
+        const titulo=temaTitulo(t), vid=temaVideoId(t);
+        if(EDIT && EDIT.kind==='tema' && EDIT.mi===mi && EDIT.ti===ti){
+          return formBox(
+            inputRow('Título del tema','f-tema-t',titulo,'Ej: Interfaz de ArcGIS Pro')+
+            inputRow('Enlace del video de Vimeo','f-tema-v',temaVideoRaw(t),'https://vimeo.com/123456789/abc123')+
+            `<p style="font-size:11.5px;color:var(--muted);margin:-6px 0 8px">IMPORTANTE: pegá el enlace COMPLETO de Vimeo (incluye el código de privacidad después del número). Dejalo vacío si todavía no tenés el video.</p>`+
+            formButtons(`saveTema(${mi},${ti})`)
+          );
+        }
+        return `<div class="data-row" style="padding:9px 12px">
+          <div class="dr-main"><b style="font-weight:500">${ti+1}. ${escHtml(titulo)||'(sin título)'}</b>
+            <span>${vid?'▶ video OK':'○ sin video'}</span></div>
+          <div class="row-actions">
+            <button class="act-btn ghost" onclick="editTema(${mi},${ti})">Editar</button>
+            <button class="act-btn ghost" onclick="moveTema(${mi},${ti},-1)">↑</button>
+            <button class="act-btn ghost" onclick="moveTema(${mi},${ti},1)">↓</button>
+            <button class="act-btn danger" onclick="delTema(${mi},${ti})">✕</button>
+          </div></div>`;
+      }).join('') || '<p style="font-size:13px;color:var(--muted);padding:6px 12px">Sin temas todavía.</p>';
+      let addTemaForm='';
+      if(EDIT && EDIT.kind==='tema' && EDIT.mi===mi && EDIT.isNew){
+        addTemaForm=formBox(
+          inputRow('Título del tema','f-tema-t','','Ej: Interfaz de ArcGIS Pro')+
+          inputRow('Enlace del video de Vimeo','f-tema-v','','https://vimeo.com/123456789/abc123')+
+          formButtons(`saveTema(${mi},-1)`,'Agregar tema')
         );
       }
-      return `<div class="data-row" style="padding:9px 12px">
-        <div class="dr-main"><b style="font-weight:500">${ti+1}. ${escHtml(titulo)||'(sin título)'}</b>
-          <span>${vid?'▶ video OK':'○ sin video'}</span></div>
-        <div class="row-actions">
-          <button class="act-btn ghost" onclick="editTema(${mi},${ti})">Editar</button>
-          <button class="act-btn ghost" onclick="moveTema(${mi},${ti},-1)">↑</button>
-          <button class="act-btn ghost" onclick="moveTema(${mi},${ti},1)">↓</button>
-          <button class="act-btn danger" onclick="delTema(${mi},${ti})">✕</button>
-        </div></div>`;
-    }).join('') || '<p style="font-size:13px;color:var(--muted);padding:6px 12px">Sin temas todavía.</p>';
-
-    // form para AGREGAR tema (al final de la lista de temas)
-    let addTemaForm='';
-    if(EDIT && EDIT.kind==='tema' && EDIT.mi===mi && EDIT.isNew){
-      addTemaForm=formBox(
-        inputRow('Título del tema','f-tema-t','','Ej: Interfaz de ArcGIS Pro')+
-        inputRow('Enlace del video de Vimeo','f-tema-v','','https://vimeo.com/123456789/abc123')+
-        formButtons(`saveTema(${mi},-1)`,'Agregar tema')
-      );
+      temasBody=temas+addTemaForm+`<div style="padding:8px 12px"><button class="act-btn" onclick="addTema(${mi})">+ Agregar tema</button></div>`;
     }
 
-    // ---- materiales ----
-    const mats=(m.mats||[]).map((f,fi)=>{
-      if(EDIT && EDIT.kind==='mat' && EDIT.mi===mi && EDIT.fi===fi){
-        return formBox(
-          inputRow('Nombre del material','f-mat-n',f.n,'Ej: Guía de instalación.pdf')+
-          inputRow('Enlace de descarga','f-mat-u',f.url||f.link,'Enlace de Google Drive, etc.')+
-          inputRow('Tamaño o nota (opcional)','f-mat-s',f.s,'Ej: 1.4 MB')+
-          formButtons(`saveMat(${mi},${fi})`)
+    // ---- MATERIALES ----
+    const matsOpen=secOpen(mi,'mats');
+    let matsBody='';
+    if(matsOpen){
+      const mats=(m.mats||[]).map((f,fi)=>{
+        if(EDIT && EDIT.kind==='mat' && EDIT.mi===mi && EDIT.fi===fi){
+          return formBox(
+            inputRow('Nombre del material','f-mat-n',f.n,'Ej: Guía de instalación.pdf')+
+            inputRow('Enlace de descarga','f-mat-u',f.url||f.link,'Enlace de Google Drive, etc.')+
+            inputRow('Tamaño o nota (opcional)','f-mat-s',f.s,'Ej: 1.4 MB')+
+            formButtons(`saveMat(${mi},${fi})`)
+          );
+        }
+        return `<div class="data-row" style="padding:8px 12px">
+          <div class="dr-main"><b style="font-weight:500">${escHtml(f.n||'Material')}</b>
+            <span>${(f.url||f.link)?'enlace OK':'sin enlace'} ${f.s?'· '+escHtml(f.s):''}</span></div>
+          <div class="row-actions">
+            <button class="act-btn ghost" onclick="editMat(${mi},${fi})">Editar</button>
+            <button class="act-btn danger" onclick="delMat(${mi},${fi})">✕</button>
+          </div></div>`;
+      }).join('') || '<p style="font-size:12.5px;color:var(--muted);padding:4px 12px">Sin materiales.</p>';
+      let addMatForm='';
+      if(EDIT && EDIT.kind==='mat' && EDIT.mi===mi && EDIT.isNew){
+        addMatForm=formBox(
+          inputRow('Nombre del material','f-mat-n','','Ej: Guía de instalación.pdf')+
+          inputRow('Enlace de descarga','f-mat-u','','Enlace de Google Drive, etc.')+
+          inputRow('Tamaño o nota (opcional)','f-mat-s','','Ej: 1.4 MB')+
+          formButtons(`saveMat(${mi},-1)`,'Agregar material')
         );
       }
-      return `<div class="data-row" style="padding:8px 12px">
-        <div class="dr-main"><b style="font-weight:500">${escHtml(f.n||'Material')}</b>
-          <span>${(f.url||f.link)?'enlace OK':'sin enlace'} ${f.s?'· '+escHtml(f.s):''}</span></div>
-        <div class="row-actions">
-          <button class="act-btn ghost" onclick="editMat(${mi},${fi})">Editar</button>
-          <button class="act-btn danger" onclick="delMat(${mi},${fi})">✕</button>
-        </div></div>`;
-    }).join('') || '<p style="font-size:12.5px;color:var(--muted);padding:4px 12px">Sin materiales.</p>';
-
-    let addMatForm='';
-    if(EDIT && EDIT.kind==='mat' && EDIT.mi===mi && EDIT.isNew){
-      addMatForm=formBox(
-        inputRow('Nombre del material','f-mat-n','','Ej: Guía de instalación.pdf')+
-        inputRow('Enlace de descarga','f-mat-u','','Enlace de Google Drive, etc.')+
-        inputRow('Tamaño o nota (opcional)','f-mat-s','','Ej: 1.4 MB')+
-        formButtons(`saveMat(${mi},-1)`,'Agregar material')
-      );
+      matsBody=mats+addMatForm+`<div style="padding:8px 12px"><button class="act-btn ghost" onclick="addMat(${mi})">+ Agregar material</button></div>`;
     }
 
-    // ---- tarea ----
-    let tareaBlock;
-    if(EDIT && EDIT.kind==='tarea' && EDIT.mi===mi){
-      tareaBlock=formBox(
-        areaRow('Consigna de la tarea','f-tarea',m.tarea,'Describí qué debe entregar el alumno')+
-        formButtons(`saveTarea(${mi})`)
-      );
-    }else{
-      const tareaTxt = m.tarea ? escHtml(m.tarea) : '<i style="color:var(--muted)">Sin tarea definida.</i>';
-      tareaBlock=`<div style="padding:4px 12px 8px;font-size:13px;color:#3c362e">${tareaTxt}
-        <button class="act-btn ghost" style="margin-left:8px" onclick="editTarea(${mi})">Editar tarea</button></div>`;
-    }
-
-    // ---- cuestionario ----
-    if(!Array.isArray(m.quiz)) m.quiz=[];
-    const quiz=(m.quiz||[]).map((q,qi)=>{
-      if(EDIT && EDIT.kind==='quiz' && EDIT.mi===mi && EDIT.qi===qi){
-        return quizForm(mi,qi,QUIZDRAFT||q);
+    // ---- TAREA ----
+    const tareaOpen=secOpen(mi,'tarea');
+    let tareaBody='';
+    if(tareaOpen){
+      if(EDIT && EDIT.kind==='tarea' && EDIT.mi===mi){
+        tareaBody=formBox(
+          areaRow('Consigna de la tarea','f-tarea',m.tarea,'Describí qué debe entregar el alumno')+
+          formButtons(`saveTarea(${mi})`)
+        );
+      }else{
+        const tareaTxt = m.tarea ? escHtml(m.tarea) : '<i style="color:var(--muted)">Sin tarea definida.</i>';
+        tareaBody=`<div style="padding:4px 12px 10px;font-size:13px;color:#3c362e">${tareaTxt}
+          <button class="act-btn ghost" style="margin-left:8px" onclick="editTarea(${mi})">Editar tarea</button></div>`;
       }
-      const opts=(q.o||[]).map((op,oi)=>`<span style="display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;margin:2px 3px 0 0;${oi===q.a?'background:var(--accent);color:#fff':'background:var(--soft);color:var(--muted)'}">${oi===q.a?'✓ ':''}${escHtml(op)}</span>`).join('');
-      return `<div class="data-row" style="padding:9px 12px;align-items:flex-start">
-        <div class="dr-main" style="flex:1"><b style="font-weight:500">${qi+1}. ${escHtml(q.q||'(sin pregunta)')}</b>
-          <div style="margin-top:3px">${opts}</div></div>
-        <div class="row-actions">
-          <button class="act-btn ghost" onclick="editQuiz(${mi},${qi})">Editar</button>
-          <button class="act-btn danger" onclick="delQuiz(${mi},${qi})">✕</button>
-        </div></div>`;
-    }).join('') || '<p style="font-size:12.5px;color:var(--muted);padding:4px 12px">Sin preguntas.</p>';
-    let addQuizForm='';
-    if(EDIT && EDIT.kind==='quiz' && EDIT.mi===mi && EDIT.isNew){
-      addQuizForm=quizForm(mi,-1,QUIZDRAFT||{q:'',o:['',''],a:0});
     }
 
-    return `<div class="data-card" style="margin-bottom:14px">
-      <div class="tbl-head" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Módulo ${mi+1}: ${escHtml(m.t||'(sin título)')}</span>
-        <span style="display:flex;gap:6px">
-          <button class="act-btn ghost" onclick="editModulo(${mi})">Editar módulo</button>
-          <button class="act-btn ghost" onclick="moveModulo(${mi},-1)">↑</button>
-          <button class="act-btn ghost" onclick="moveModulo(${mi},1)">↓</button>
-          <button class="act-btn danger" onclick="delModulo(${mi})">Borrar</button>
-        </span>
-      </div>
+    // ---- CUESTIONARIO ----
+    const quizOpen=secOpen(mi,'quiz');
+    let quizBody='';
+    if(quizOpen){
+      const quiz=(m.quiz||[]).map((q,qi)=>{
+        if(EDIT && EDIT.kind==='quiz' && EDIT.mi===mi && EDIT.qi===qi){
+          return quizForm(mi,qi,QUIZDRAFT||q);
+        }
+        const opts=(q.o||[]).map((op,oi)=>`<span style="display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;margin:2px 3px 0 0;${oi===q.a?'background:var(--accent);color:#fff':'background:var(--soft);color:var(--muted)'}">${oi===q.a?'✓ ':''}${escHtml(op)}</span>`).join('');
+        return `<div class="data-row" style="padding:9px 12px;align-items:flex-start">
+          <div class="dr-main" style="flex:1"><b style="font-weight:500">${qi+1}. ${escHtml(q.q||'(sin pregunta)')}</b>
+            <div style="margin-top:3px">${opts}</div></div>
+          <div class="row-actions">
+            <button class="act-btn ghost" onclick="editQuiz(${mi},${qi})">Editar</button>
+            <button class="act-btn danger" onclick="delQuiz(${mi},${qi})">✕</button>
+          </div></div>`;
+      }).join('') || '<p style="font-size:12.5px;color:var(--muted);padding:4px 12px">Sin preguntas.</p>';
+      let addQuizForm='';
+      if(EDIT && EDIT.kind==='quiz' && EDIT.mi===mi && EDIT.isNew){
+        addQuizForm=quizForm(mi,-1,QUIZDRAFT||{q:'',o:['',''],a:0});
+      }
+      quizBody=quiz+addQuizForm+`<div style="padding:8px 12px"><button class="act-btn ghost" onclick="addQuiz(${mi})">+ Agregar pregunta</button></div>`;
+    }
+
+    return `<div class="data-card" style="margin-bottom:12px">
+      ${head}
       ${moduloForm}
-      <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)">Temas</div>
-      ${temas}
-      ${addTemaForm}
-      <div style="padding:8px 12px"><button class="act-btn" onclick="addTema(${mi})">+ Agregar tema</button></div>
-      <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)">Materiales</div>
-      ${mats}
-      ${addMatForm}
-      <div style="padding:8px 12px"><button class="act-btn ghost" onclick="addMat(${mi})">+ Agregar material</button></div>
-      <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)">Tarea</div>
-      ${tareaBlock}
-      <div style="padding:6px 12px 2px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)">Cuestionario (${m.quiz.length} ${m.quiz.length===1?'pregunta':'preguntas'})</div>
-      ${quiz}
-      ${addQuizForm}
-      <div style="padding:8px 12px"><button class="act-btn ghost" onclick="addQuiz(${mi})">+ Agregar pregunta</button></div>
+      ${secHead(mi,'temas','Temas',nTemas)}
+      ${temasBody}
+      ${secHead(mi,'mats','Materiales',nMats)}
+      ${matsBody}
+      ${secHead(mi,'tarea','Tarea',m.tarea?1:0)}
+      ${tareaBody}
+      ${secHead(mi,'quiz','Cuestionario',nQuiz)}
+      ${quizBody}
     </div>`;
   }).join('') : '<p style="font-size:13.5px;color:var(--muted);margin-bottom:14px">Esta capacitación todavía no tiene módulos.</p>';
 
@@ -2306,8 +2423,8 @@ function renderContentEditor(){
 
   document.getElementById('courseBody').innerHTML=`
     <h2 style="font-size:21px;margin-bottom:4px">Contenido · ${escHtml(c.title)}</h2>
-    <p style="color:var(--muted);font-size:13.5px;margin-bottom:18px">Gestioná los módulos y, dentro de cada uno, los temas con su enlace de video de Vimeo, los materiales y la tarea.</p>
-    <div style="max-height:54vh;overflow:auto;margin-bottom:14px">${mods}${addModuloForm}</div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:14px">Tocá un módulo para expandirlo. Dentro, tocá cada sección (Temas, Materiales, Tarea, Cuestionario) para mostrarla.</p>
+    <div id="ce-scroll" style="max-height:56vh;overflow:auto;margin-bottom:14px">${mods}${addModuloForm}</div>
     <div style="display:flex;gap:10px;border-top:1px solid var(--line);padding-top:14px">
       <button class="act-btn" onclick="addModulo()">+ Agregar módulo</button>
       <button class="act-btn" onclick="saveContent()" style="margin-left:auto">Guardar contenido</button>
@@ -2317,33 +2434,33 @@ function renderContentEditor(){
 }
 
 /* --- módulos --- */
-function addModulo(){ EDIT={kind:'modulo',isNew:true}; renderContentEditor(); }
-function editModulo(mi){ EDIT={kind:'modulo',mi}; renderContentEditor(); }
+function addModulo(){ EDIT={kind:'modulo',isNew:true}; reRender(); }
+function editModulo(mi){ EDIT={kind:'modulo',mi}; reRender(); }
 function saveModulo(mi){
   const t=(document.getElementById('f-mod-t').value||'').trim();
   const tipo=document.getElementById('f-mod-tipo').value==='practica'?'practica':'teoria';
   const obj=(document.getElementById('f-mod-obj').value||'').trim();
   if(!t){ alert('El módulo necesita un título.'); return; }
   const c=curContentCourse();
-  if(mi===-1){ c.modules.push({ t, tipo, obj, temas:[], mats:[], tarea:'', quiz:[] }); }
+  if(mi===-1){ c.modules.push({ t, tipo, obj, temas:[], mats:[], tarea:'', quiz:[] }); OPEN.mod[c.modules.length-1]=true; }
   else{ const m=c.modules[mi]; m.t=t; m.tipo=tipo; m.obj=obj; }
-  EDIT=null; renderContentEditor();
+  EDIT=null; reRender();
 }
 function delModulo(mi){
   const c=curContentCourse();
   if(!confirm(`¿Borrar el módulo "${c.modules[mi].t}" y todos sus temas?`)) return;
-  c.modules.splice(mi,1); EDIT=null; renderContentEditor();
+  c.modules.splice(mi,1); EDIT=null; reRender();
 }
 function moveModulo(mi,dir){
   const c=curContentCourse(), j=mi+dir;
   if(j<0||j>=c.modules.length) return;
   [c.modules[mi],c.modules[j]]=[c.modules[j],c.modules[mi]];
-  EDIT=null; renderContentEditor();
+  EDIT=null; reRender();
 }
 
 /* --- temas --- */
-function addTema(mi){ EDIT={kind:'tema',mi,isNew:true}; renderContentEditor(); }
-function editTema(mi,ti){ EDIT={kind:'tema',mi,ti}; renderContentEditor(); }
+function addTema(mi){ EDIT={kind:'tema',mi,isNew:true}; reRender(); }
+function editTema(mi,ti){ EDIT={kind:'tema',mi,ti}; reRender(); }
 function saveTema(mi,ti){
   const titulo=(document.getElementById('f-tema-t').value||'').trim();
   const video=(document.getElementById('f-tema-v').value||'').trim();
@@ -2351,26 +2468,26 @@ function saveTema(mi,ti){
   const arr=curContentCourse().modules[mi].temas;
   if(ti===-1){ arr.push({ titulo, video }); }
   else{ arr[ti]={ titulo, video }; }
-  EDIT=null; renderContentEditor();
+  EDIT=null; reRender();
 }
 function delTema(mi,ti){
   if(!confirm('¿Borrar este tema?')) return;
-  curContentCourse().modules[mi].temas.splice(ti,1); EDIT=null; renderContentEditor();
+  curContentCourse().modules[mi].temas.splice(ti,1); EDIT=null; reRender();
 }
 function moveTema(mi,ti,dir){
   const arr=curContentCourse().modules[mi].temas, j=ti+dir;
   if(j<0||j>=arr.length) return;
   [arr[ti],arr[j]]=[arr[j],arr[ti]];
-  EDIT=null; renderContentEditor();
+  EDIT=null; reRender();
 }
 
 /* --- materiales --- */
 function addMat(mi){
   const m=curContentCourse().modules[mi];
   if(!Array.isArray(m.mats)) m.mats=[];
-  EDIT={kind:'mat',mi,isNew:true}; renderContentEditor();
+  EDIT={kind:'mat',mi,isNew:true}; reRender();
 }
-function editMat(mi,fi){ EDIT={kind:'mat',mi,fi}; renderContentEditor(); }
+function editMat(mi,fi){ EDIT={kind:'mat',mi,fi}; reRender(); }
 function saveMat(mi,fi){
   const n=(document.getElementById('f-mat-n').value||'').trim();
   const url=(document.getElementById('f-mat-u').value||'').trim();
@@ -2379,30 +2496,27 @@ function saveMat(mi,fi){
   const arr=curContentCourse().modules[mi].mats;
   if(fi===-1){ arr.push({ n, url, s, i:'📄' }); }
   else{ const f=arr[fi]; f.n=n; f.url=url; f.s=s; delete f.link; }
-  EDIT=null; renderContentEditor();
+  EDIT=null; reRender();
 }
 function delMat(mi,fi){
   if(!confirm('¿Borrar este material?')) return;
-  curContentCourse().modules[mi].mats.splice(fi,1); EDIT=null; renderContentEditor();
+  curContentCourse().modules[mi].mats.splice(fi,1); EDIT=null; reRender();
 }
 
 /* --- tarea --- */
-function editTarea(mi){ EDIT={kind:'tarea',mi}; renderContentEditor(); }
+function editTarea(mi){ EDIT={kind:'tarea',mi}; reRender(); }
 function saveTarea(mi){
   const t=(document.getElementById('f-tarea').value||'').trim();
-  curContentCourse().modules[mi].tarea=t; EDIT=null; renderContentEditor();
+  curContentCourse().modules[mi].tarea=t; EDIT=null; reRender();
 }
 
 /* --- cuestionario --- */
-// borrador en memoria para no perder lo tipeado al agregar/quitar opciones
-let QUIZDRAFT=null;
-function addQuiz(mi){ QUIZDRAFT={q:'',o:['',''],a:0}; EDIT={kind:'quiz',mi,qi:-1,isNew:true}; renderContentEditor(); }
+function addQuiz(mi){ QUIZDRAFT={q:'',o:['',''],a:0}; EDIT={kind:'quiz',mi,qi:-1,isNew:true}; reRender(); }
 function editQuiz(mi,qi){
   const src=curContentCourse().modules[mi].quiz[qi];
   QUIZDRAFT={ q:src.q||'', o:(src.o||[]).slice(), a:typeof src.a==='number'?src.a:0 };
-  EDIT={kind:'quiz',mi,qi}; renderContentEditor();
+  EDIT={kind:'quiz',mi,qi}; reRender();
 }
-// lee lo que hay en el formulario hacia QUIZDRAFT (para no perderlo al re-render)
 function readQuizForm(){
   if(!QUIZDRAFT) return;
   const qEl=document.getElementById('f-quiz-q'); if(qEl) QUIZDRAFT.q=qEl.value;
@@ -2412,16 +2526,14 @@ function readQuizForm(){
   const checked=document.querySelector('input[name="f-quiz-correct"]:checked');
   if(checked) QUIZDRAFT.a=+checked.value;
 }
-function addQuizOpt(mi,qi){
-  readQuizForm(); QUIZDRAFT.o.push(''); renderContentEditor();
-}
+function addQuizOpt(mi,qi){ readQuizForm(); QUIZDRAFT.o.push(''); reRender(); }
 function removeQuizOpt(mi,qi,oi){
   readQuizForm();
   if(QUIZDRAFT.o.length<=2) return;
   QUIZDRAFT.o.splice(oi,1);
   if(QUIZDRAFT.a>=QUIZDRAFT.o.length) QUIZDRAFT.a=0;
   if(QUIZDRAFT.a===oi) QUIZDRAFT.a=0;
-  renderContentEditor();
+  reRender();
 }
 function saveQuiz(mi,qi){
   readQuizForm();
@@ -2429,18 +2541,17 @@ function saveQuiz(mi,qi){
   const o=(QUIZDRAFT.o||[]).map(x=>(x||'').trim());
   if(!q){ alert('La pregunta necesita un texto.'); return; }
   if(o.filter(Boolean).length<2){ alert('Tenés que cargar al menos 2 opciones.'); return; }
-  // limpiar opciones vacías al final, ajustando el índice correcto
   const cleaned=[]; let newA=QUIZDRAFT.a;
   o.forEach((op,idx)=>{ if(op){ cleaned.push(op); } else if(idx<QUIZDRAFT.a){ newA--; } });
   if(newA<0||newA>=cleaned.length) newA=0;
   const item={ q, o:cleaned, a:newA };
   const arr=curContentCourse().modules[mi].quiz;
   if(qi===-1){ arr.push(item); } else { arr[qi]=item; }
-  QUIZDRAFT=null; EDIT=null; renderContentEditor();
+  QUIZDRAFT=null; EDIT=null; reRender();
 }
 function delQuiz(mi,qi){
   if(!confirm('¿Borrar esta pregunta?')) return;
-  curContentCourse().modules[mi].quiz.splice(qi,1); renderContentEditor();
+  curContentCourse().modules[mi].quiz.splice(qi,1); reRender();
 }
 
 async function saveContent(){
@@ -2456,12 +2567,15 @@ async function saveContent(){
   }
 }
 
+window.toggleMod=toggleMod; window.toggleSec=toggleSec;
 window.cancelEdit=cancelEdit;
 window.saveModulo=saveModulo;window.saveTema=saveTema;window.saveMat=saveMat;window.saveTarea=saveTarea;
+window.addModulo=addModulo;window.editModulo=editModulo;window.delModulo=delModulo;window.moveModulo=moveModulo;
+window.addTema=addTema;window.editTema=editTema;window.delTema=delTema;window.moveTema=moveTema;
 window.addMat=addMat;window.editMat=editMat;window.delMat=delMat;window.editTarea=editTarea;
 window.addQuiz=addQuiz;window.editQuiz=editQuiz;window.saveQuiz=saveQuiz;window.delQuiz=delQuiz;
 window.addQuizOpt=addQuizOpt;window.removeQuizOpt=removeQuizOpt;
-
+window.saveContent=saveContent;
 window.openContentEditor=openContentEditor;
 window.closeContentEditor=closeContentEditor;
 window.addModulo=addModulo;window.editModulo=editModulo;window.delModulo=delModulo;window.moveModulo=moveModulo;

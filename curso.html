@@ -45,9 +45,16 @@
   .hero{position:relative;overflow:hidden;color:#fff;padding:150px 40px 70px;
     background:radial-gradient(900px 400px at 50% -10%, rgba(52,166,120,.3), transparent 62%),
                linear-gradient(160deg,var(--green) 0%,var(--green-deep) 58%,var(--green-darker) 100%)}
-  .hero::after{content:"";position:absolute;inset:0;opacity:.4;pointer-events:none;
+  .hero::after{content:"";position:absolute;inset:0;opacity:.4;pointer-events:none;z-index:1;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M0 22h44M22 0v44' stroke='rgba(255,255,255,.05)' stroke-width='1'/%3E%3C/svg%3E")}
-  .hero-inner{position:relative;z-index:1;max-width:1120px;margin:0 auto}
+  /* imagen de fondo del hero (header del curso) con overlay verde para legibilidad */
+  .hero-img{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;
+    opacity:.30;transform:scale(1.06);animation:heroZoom 12s ease-out forwards}
+  .hero-img::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(160deg,rgba(34,82,53,.55),rgba(14,42,40,.88))}
+  @keyframes heroZoom{to{transform:scale(1)}}
+  @media(prefers-reduced-motion:reduce){.hero-img{animation:none;transform:none}}
+  .hero-inner{position:relative;z-index:2;max-width:1120px;margin:0 auto}
   .back{display:inline-flex;align-items:center;gap:7px;color:rgba(255,255,255,.8);font-size:13.5px;margin-bottom:24px;transition:color .2s}
   .back:hover{color:#fff}.back svg{width:15px;height:15px}
   .hero .cat{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-bright);font-weight:600;margin-bottom:14px}
@@ -64,6 +71,11 @@
   @media(max-width:900px){.layout{grid-template-columns:1fr;gap:30px}}
   .sec-title{font-size:24px;font-weight:700;color:var(--green-deep);margin-bottom:6px;letter-spacing:-.01em}
   .sec-sub{color:var(--muted);font-size:14.5px;margin-bottom:24px}
+  /* reveal al hacer scroll (sutil) */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1)}
+  .reveal.visible{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.07s}.reveal.d2{transition-delay:.14s}.reveal.d3{transition-delay:.21s}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
   /* módulos acordeón */
   .mod{border:1px solid var(--line);border-radius:13px;margin-bottom:12px;overflow:hidden;background:var(--card);transition:border-color .2s,box-shadow .2s}
   .mod.open{border-color:var(--accent);box-shadow:0 10px 30px rgba(34,82,53,.08)}
@@ -83,6 +95,9 @@
   .mod-body-inner{padding:0 20px 18px 68px}
   .topic{position:relative;font-size:14px;color:#3c362e;padding:7px 0 7px 20px;line-height:1.4}
   .topic::before{content:"";position:absolute;left:0;top:14px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+  .mod-extras{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+  .mextra{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--green);background:rgba(52,166,120,.1);border:1px solid rgba(52,166,120,.2);padding:6px 12px;border-radius:30px}
+  .mextra svg{width:15px;height:15px;color:var(--accent);flex:none}
   /* sidebar */
   .side{position:sticky;top:24px;display:flex;flex-direction:column;gap:18px}
   @media(max-width:900px){.side{position:static}}
@@ -113,6 +128,8 @@
   .social-btn{width:38px;height:38px;border-radius:9px;border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;transition:.2s}
   .social-btn:hover{background:var(--accent);border-color:var(--accent)}
   .social-btn img{width:20px;height:20px;object-fit:contain;display:block}
+  .social-btn svg{width:18px;height:18px;color:#fff;display:block}
+  .social-btn:hover svg{color:#fff}
   .footer-bottom{border-top:1px solid rgba(255,255,255,.12);padding:20px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
   .footer-bottom p{font-size:12.5px;color:rgba(255,255,255,.6)}
   .footer-dev{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
@@ -165,9 +182,9 @@
         </ul>
         <h5 style="margin-top:22px">Comunidad</h5>
         <div class="social-links">
-          <a href="https://www.instagram.com/py.soiltech/" target="_blank" rel="noopener" class="social-btn" aria-label="Instagram"><img src="INSTAGRAM.svg" alt="Instagram"></a>
-          <a href="https://www.facebook.com/py.soiltech/" target="_blank" rel="noopener" class="social-btn" aria-label="Facebook"><img src="FACEBOOK.svg" alt="Facebook"></a>
-          <a href="https://www.linkedin.com/company/soiltechpy/?viewAsMember=true" target="_blank" rel="noopener" class="social-btn" aria-label="LinkedIn"><img src="LINKEDIN.svg" alt="LinkedIn"></a>
+          <a href="https://www.instagram.com/py.soiltech/" target="_blank" rel="noopener" class="social-btn" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+          <a href="https://www.facebook.com/py.soiltech/" target="_blank" rel="noopener" class="social-btn" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+          <a href="https://www.linkedin.com/company/soiltechpy/?viewAsMember=true" target="_blank" rel="noopener" class="social-btn" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
         </div>
       </div>
     </div>
@@ -192,6 +209,10 @@ const firebaseConfig = {
 const db = getFirestore(initializeApp(firebaseConfig));
 window.fetchPrice = async (courseId) => {
   try{ const s=await getDoc(doc(db,"courseSettings",courseId)); return s.exists()?(s.data().price||null):null; }
+  catch(e){ return null; }
+};
+window.fetchCourse = async (courseId) => {
+  try{ const s=await getDoc(doc(db,"courses",courseId)); return s.exists()?({id:courseId,...s.data()}):null; }
   catch(e){ return null; }
 };
 </script>
@@ -239,36 +260,58 @@ const ICON_CHEV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const ICON_WA='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.38 8.38 0 0 1-4-1L3 20l1-5.5a8.38 8.38 0 0 1-1-4A8.5 8.5 0 0 1 21 11.5z"/></svg>';
 const ICON_CAP='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>';
 const ICON_BACK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>';
+const ICON_TASK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+const ICON_FILE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6M9 15l3 3 3-3"/></svg>';
 
 function getParam(n){return new URLSearchParams(location.search).get(n);}
 const id=getParam('c');
-const c=COURSES[id];
 const page=document.getElementById('page');
 
-if(!c){
+// helpers compatibles con la estructura real de Firebase (temas como {titulo,video}, mats[], tarea, quiz[])
+function temaTxt(t){ return (t && typeof t==='object') ? (t.titulo||t.t||'') : (t||''); }
+function nMats(m){ return Array.isArray(m.mats) ? m.mats.length : 0; }
+function tieneTarea(m){ return !!(m.tarea && String(m.tarea).trim()); }
+
+function mostrarNoEncontrado(){
   page.innerHTML=`<div style="max-width:600px;margin:140px auto 80px;text-align:center;padding:0 30px">
     <h1 style="font-size:30px;margin-bottom:12px;color:var(--green-deep)">Curso no encontrado</h1>
     <p style="color:var(--muted);margin-bottom:24px">El curso que buscás no existe o el enlace es incorrecto.</p>
     <a class="gbtn" href="index.html"><span class="glow"></span><span class="lbl-in">Volver al catálogo</span></a></div>`;
-}else{
-  const totalTemas=c.modules.reduce((s,m)=>s+m.temas.length,0);
+}
+
+function render(c){
+  if(!c){ mostrarNoEncontrado(); return; }
+  if(!Array.isArray(c.modules)) c.modules=[];
+  const incluye = Array.isArray(c.incluye) ? c.incluye : [];
+  const totalTemas=c.modules.reduce((s,m)=>s+((m.temas&&m.temas.length)||0),0);
   const waMsg=encodeURIComponent(`Hola SoilTech, quiero acceder al curso "${c.title}". ¿Me pasan los pasos para inscribirme?`);
   const waLink=`https://wa.me/${WA}?text=${waMsg}`;
-  const mods=c.modules.map((m,i)=>`
-    <div class="mod" id="mod-${i}">
+  const mods=c.modules.map((m,i)=>{
+    const temas = Array.isArray(m.temas) ? m.temas : [];
+    const mats = nMats(m), tarea = tieneTarea(m);
+    const tipoInfo = TIPO[m.tipo] || TIPO.teoria;
+    // resumen de extras del módulo (tarea / materiales)
+    const extras = [];
+    if(tarea) extras.push(`<span class="mextra">${ICON_TASK} Incluye tarea</span>`);
+    if(mats>0) extras.push(`<span class="mextra">${ICON_FILE} ${mats} material${mats===1?'':'es'} descargable${mats===1?'':'s'}</span>`);
+    const extrasHtml = extras.length ? `<div class="mod-extras">${extras.join('')}</div>` : '';
+    return `
+    <div class="mod reveal${i>0?(' d'+Math.min(i,3)):''}" id="mod-${i}">
       <div class="mod-head" onclick="tog(${i})">
         <div class="mod-num">${i+1}</div>
-        <div class="mod-info"><b>${m.t}</b><span>${m.temas.length} temas</span></div>
-        <span class="mtag ${TIPO[m.tipo][0]}">${TIPO[m.tipo][1]}</span>
+        <div class="mod-info"><b>${temaTxt(m.t)||m.t||'Módulo'}</b><span>${temas.length} temas${mats>0?` · ${mats} material${mats===1?'':'es'}`:''}${tarea?' · tarea':''}</span></div>
+        <span class="mtag ${tipoInfo[0]}">${tipoInfo[1]}</span>
         <span class="chev">${ICON_CHEV}</span>
       </div>
       <div class="mod-body" id="mb-${i}"><div class="mod-body-inner">
-        ${m.temas.map(t=>`<div class="topic">${t}</div>`).join('')}
+        ${temas.map(t=>`<div class="topic">${temaTxt(t)}</div>`).join('')}
+        ${extrasHtml}
       </div></div>
-    </div>`).join('');
+    </div>`;}).join('');
 
   page.innerHTML=`
     <div class="hero">
+      ${c.img ? `<div class="hero-img" style="background-image:url('${c.img}')"></div>` : ''}
       <div class="hero-inner">
         <a class="back" href="index.html">${ICON_BACK} Volver al catálogo</a>
         <div class="cat">${c.cat}</div>
@@ -284,17 +327,17 @@ if(!c){
     </div>
     <div class="layout">
       <div>
-        <div class="sec-title">Programa del curso</div>
-        <div class="sec-sub">Tocá cada módulo para ver el detalle de los temas.</div>
+        <div class="sec-title reveal">Programa del curso</div>
+        <div class="sec-sub reveal">Tocá cada módulo para ver el detalle de los temas.</div>
         ${mods}
       </div>
-      <div class="side">
+      <div class="side reveal d1">
         <div class="price-card">
           <div class="plabel">Inversión</div>
           <div class="price" id="price">…</div>
           <div class="pnote">Pago coordinado por WhatsApp</div>
           <a class="gbtn wa full" href="${waLink}" target="_blank" rel="noopener"><span class="glow"></span><span class="lbl-in">${ICON_WA} Solicitar acceso</span></a>
-          <ul class="incl">${c.incluye.map(x=>`<li>${x}</li>`).join('')}</ul>
+          <ul class="incl">${incluye.map(x=>`<li>${x}</li>`).join('')}</ul>
         </div>
         <div class="info-card">
           <h4>Detalles</h4>
@@ -320,6 +363,26 @@ if(!c){
     const glow=btn.querySelector('.glow'); if(!glow)return;
     btn.addEventListener('mousemove',e=>{const r=btn.getBoundingClientRect();glow.style.left=(e.clientX-r.left)+'px';glow.style.top=(e.clientY-r.top)+'px';});
   });
+
+  // reveal al hacer scroll
+  scanReveal();
+}
+
+// ── Reveal: cada .reveal aparece al entrar en pantalla ──
+let revealIO=null;
+function scanReveal(){
+  const items=document.querySelectorAll('.reveal:not(.visible)');
+  if(!('IntersectionObserver' in window)){ items.forEach(el=>el.classList.add('visible')); return; }
+  if(!revealIO){
+    revealIO=new IntersectionObserver((ents)=>{
+      ents.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('visible'); revealIO.unobserve(en.target); } });
+    },{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+  }
+  items.forEach(el=>{
+    const r=el.getBoundingClientRect();
+    if(r.top < (window.innerHeight||document.documentElement.clientHeight)) el.classList.add('visible');
+    else revealIO.observe(el);
+  });
 }
 function tog(i){
   const m=document.getElementById('mod-'+i),b=document.getElementById('mb-'+i);
@@ -327,6 +390,29 @@ function tog(i){
   else{m.classList.add('open');b.style.maxHeight=b.scrollHeight+'px';}
 }
 window.tog=tog;
+
+// ── Cargar el curso: primero desde Firebase (contenido real del admin),
+//    con el objeto COURSES de respaldo si Firebase falla o no tiene el curso ──
+// Espera a que el módulo de Firebase defina fetchCourse (carga diferida).
+function esperarFetchCourse(maxMs){
+  return new Promise(resolve=>{
+    const t0=Date.now();
+    (function chk(){
+      if(typeof window.fetchCourse==='function') return resolve(true);
+      if(Date.now()-t0>maxMs) return resolve(false);
+      setTimeout(chk,60);
+    })();
+  });
+}
+(async function(){
+  let curso = null;
+  try{
+    const listo = await esperarFetchCourse(4000);
+    if(listo){ curso = await window.fetchCourse(id); }
+  }catch(e){ /* ignora, usa respaldo */ }
+  if(!curso){ curso = COURSES[id] || null; }
+  render(curso);
+})();
 </script>
 </body>
 </html>
