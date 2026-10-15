@@ -411,6 +411,9 @@ function esperarFetchCourse(maxMs){
     if(listo){ curso = await window.fetchCourse(id); }
   }catch(e){ /* ignora, usa respaldo */ }
   if(!curso){ curso = COURSES[id] || null; }
+  // Las capacitaciones privadas u ocultas no se muestran públicamente por URL:
+  // solo se acceden desde el panel del alumno con acceso por correo.
+  if(curso && (curso.estado==='privado' || curso.estado==='oculto')){ curso = null; }
   render(curso);
 })();
 </script>

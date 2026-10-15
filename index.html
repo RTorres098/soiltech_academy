@@ -294,7 +294,7 @@ function renderCursos(){
   const g=document.getElementById('grid');
   if(!g) return;
   const lista = CURSOS
-    .filter(c => c.estado !== 'oculto')
+    .filter(c => c.estado !== 'oculto' && c.estado !== 'privado')
     .sort((a,b)=> (typeof a.orden==='number' && typeof b.orden==='number') ? a.orden-b.orden : 0);
   g.innerHTML='';
   lista.forEach((c,i)=>{

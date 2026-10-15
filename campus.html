@@ -1343,7 +1343,7 @@ function applyRoleVisibility(){
 let MY_COURSES=[];   // [courseId] habilitados para mi correo
 async function renderGrid(){
   if(USER.email){ MY_COURSES = await window.fbMyCourses(USER.email); }
-  // el alumno ve sus cursos habilitados, menos los ocultos; «próximamente» se ve sin poder entrar
+  // el alumno ve sus cursos habilitados, menos los ocultos; «próximamente» se ve sin poder entrar; «privado» se cursa normal (solo con acceso por correo, no está en vitrina)
   const active = COURSES.filter(c => MY_COURSES.includes(c.id) && c.estado!=='oculto');
 
   const mis=document.getElementById('courseGrid'); mis.innerHTML='';
@@ -2549,6 +2549,7 @@ async function renderAdminPanel(){
   if(adminTab==='cursos'){
     const estadoPill=(e)=>{
       if(e==='proximamente') return '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(169,132,47,.15);color:var(--gold);vertical-align:middle">PRÓXIMAMENTE</span>';
+      if(e==='privado') return '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(52,98,166,.15);color:#2f5b9c;vertical-align:middle">PRIVADO</span>';
       if(e==='oculto') return '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(107,98,88,.15);color:var(--muted);vertical-align:middle">OCULTO</span>';
       return '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(52,166,120,.15);color:var(--green);vertical-align:middle">DISPONIBLE</span>';
     };
@@ -2715,6 +2716,7 @@ function openCourseEditor(courseId){
         <select id="ce-estado">
           <option value="disponible" ${(!c||c.estado==='disponible'||!c.estado)?'selected':''}>Disponible (se puede cursar)</option>
           <option value="proximamente" ${c&&c.estado==='proximamente'?'selected':''}>Próximamente (visible, no se cursa)</option>
+          <option value="privado" ${c&&c.estado==='privado'?'selected':''}>Privado (se cursa con acceso, no en vitrina)</option>
           <option value="oculto" ${c&&c.estado==='oculto'?'selected':''}>Oculto (no aparece)</option>
         </select>
       </div>
