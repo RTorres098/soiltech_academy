@@ -1238,7 +1238,50 @@ const INSTRUCTORS = [
 let ROLE='alumno';
 const VIEWS=['dashboard','detail','quizPage','profilePage','certsPage','certPage','instructorsPage','instructorPanel','adminPanel'];
 function hideAll(){VIEWS.forEach(v=>{const el=document.getElementById(v);if(el)el.style.display='none';});}
-function show(v){hideAll();document.getElementById(v).style.display='block';window.scrollTo(0,0);}
+let _navLock=false;  // true mientras restauramos desde popstate (no re-empujar historial)
+function show(v){
+  hideAll();
+  const el=document.getElementById(v); if(el) el.style.display='block';
+  window.scrollTo(0,0);
+  if(_navLock) return;  // viene de popstate: no tocar el historial
+  const st={campusView:v, course: (typeof curCourse!=='undefined'&&curCourse)?curCourse.id:null, mod:(typeof quizCtx!=='undefined'&&quizCtx)?quizCtx.mod:null};
+  try{
+    // evitar empujar dos veces la misma vista consecutiva
+    if(!history.state || history.state.campusView!==v || history.state.course!==st.course || history.state.mod!==st.mod){
+      history.pushState(st, '', location.pathname+location.search);
+    }
+  }catch(e){}
+}
+// Restaura una vista del campus al navegar con el botón atrás/adelante.
+async function restoreView(st){
+  _navLock=true;
+  try{
+    const v = st && st.campusView ? st.campusView : 'dashboard';
+    if(v==='dashboard'){ if(ROLE==='alumno'){ renderGrid(); } hideAll(); const d=document.getElementById('dashboard'); if(d) d.style.display='block'; window.scrollTo(0,0); }
+    else if(v==='detail'){
+      const c = st.course ? COURSES.find(x=>x.id===st.course) : curCourse;
+      if(c){ curCourse=c; await loadCourseState(c); renderDetail(); } else { goDash(); }
+    }
+    else if(v==='quizPage'){
+      // volver al detalle del curso en vez de re-abrir el quiz (más intuitivo)
+      if(curCourse){ renderDetail(); } else if(st.course){ const c=COURSES.find(x=>x.id===st.course); if(c){curCourse=c; await loadCourseState(c); renderDetail();} else goDash(); } else { goDash(); }
+    }
+    else if(v==='profilePage'){ renderProfile(); }
+    else if(v==='certsPage'){ renderCerts(); }
+    else if(v==='instructorsPage'){ renderInstructorsPage(); }
+    else if(v==='instructorPanel'){ renderInstructorPanel(); }
+    else if(v==='adminPanel'){ renderAdminPanel(); }
+    else if(v==='certPage'){ goDash(); }  // el certificado no se re-renderiza por back: volver al panel
+    else { hideAll(); const el=document.getElementById(v); if(el) el.style.display='block'; }
+  }catch(e){ console.warn('restoreView', e); }
+  _navLock=false;
+}
+window.addEventListener('popstate', (ev)=>{
+  // solo actuar si la app está visible (usuario logueado)
+  const app=document.getElementById('app');
+  if(!app || app.style.display==='none') return;
+  restoreView(ev.state || {campusView:'dashboard'});
+});
 function setRole(r){
   ROLE=r;
   ['alumno','instructor','admin'].forEach(x=>document.getElementById('rl-'+x).classList.toggle('on',x===r));
@@ -1323,6 +1366,8 @@ window.onAuthIn = async function(u){
   await loadCoursesFromFirebase();
   applyRoleVisibility();
   setRole(USER.role);   // entra al panel según su rol real
+  // ancla de historial: el primer "atrás" dentro del campus no sale a la vitrina
+  try{ history.replaceState({campusView: (ROLE==='alumno'?'dashboard':(ROLE==='instructor'?'instructorPanel':'adminPanel'))}, '', location.pathname+location.search); }catch(e){}
 };
 
 // Lee los cursos desde Firebase y reemplaza el array. Si Firebase falla o está
