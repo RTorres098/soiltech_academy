@@ -1449,6 +1449,7 @@ const TASKPILL={pend:['pill-pend','Pendiente'],rev:['pill-rev','En revisión'],o
 
 function renderDetail(){
   const c=curCourse, p=courseProgress(c), done=c.modules.filter(m=>moduleComplete(m,c)).length;
+  const QMIN=courseCert(c).quizMin;
   show('detail');
   const d=document.getElementById('detail');
 
@@ -1502,10 +1503,10 @@ function renderDetail(){
 
     // quiz — ahora se abre en página aparte
     const quizDone=m._quiz!==null;
-    const quizPass=quizDone&&m._quiz>=PASS;
+    const quizPass=quizDone&&m._quiz>=QMIN;
     let quizPanel='';
     if(quizDone){
-      quizPanel=`<div class="quiz-result ${quizPass?'ok':'no'}">${quizPass?'✓ Aprobado':'✗ No aprobado'} — último intento: ${m._quiz}% ${quizPass?'':'(mínimo '+PASS+'%)'}</div>
+      quizPanel=`<div class="quiz-result ${quizPass?'ok':'no'}">${quizPass?'✓ Aprobado':'✗ No aprobado'} — último intento: ${m._quiz}% ${quizPass?'':'(mínimo '+QMIN+'%)'}</div>
         <button class="act-btn" style="margin-top:12px" onclick="openQuiz(${i})">${quizPass?'Repetir cuestionario':'Reintentar cuestionario'}</button>`;
     } else {
       quizPanel=`<button class="act-btn" onclick="openQuiz(${i})">Acceder al cuestionario →</button>`;
@@ -1543,7 +1544,7 @@ function renderDetail(){
           <p>${m.tarea}</p>${taskActions}</div>
         <div class="panel"><div class="panel-head"><h4>❓ Cuestionario de evaluación</h4>
           <span class="pill ${quizDone?(quizPass?'pill-ok':'pill-no'):'pill-pend'}">${quizDone?m._quiz+'%':'Sin rendir'}</span></div>
-          <p>Cuestionario de selección múltiple. Intentos ilimitados; se aprueba con un mínimo de ${PASS}%.</p>
+          <p>Cuestionario de selección múltiple. Intentos ilimitados; se aprueba con un mínimo de ${QMIN}%.</p>
           ${quizPanel}</div>
         ${qPanel}
         <div class="mod-status">
@@ -1594,7 +1595,7 @@ function renderDetail(){
         <div class="side-card"><h4>Detalles</h4>
           <div class="info-row"><span class="k">Duración</span><span class="v">${c.hours}</span></div>
           <div class="info-row"><span class="k">Módulos</span><span class="v">${c.modules.length}</span></div>
-          <div class="info-row"><span class="k">Aprobación</span><span class="v">≥ ${PASS}%</span></div>
+          <div class="info-row"><span class="k">Aprobación</span><span class="v">≥ ${QMIN}%</span></div>
         </div>
         <div class="side-card"><h4>El programa incluye</h4>
           <ul class="incl">${c.incluye.map(x=>`<li>${x}</li>`).join('')}</ul>
@@ -1752,6 +1753,7 @@ function submitQuiz(){
 }
 function renderQuiz(){
   const c=curCourse, i=quizCtx.mod, m=c.modules[i];
+  const QMIN=courseCert(c).quizMin;
   const pg=document.getElementById('quizPage');
   if(quizCtx.step==='intro'){
     pg.innerHTML=`
@@ -1766,10 +1768,10 @@ function renderQuiz(){
           <ul class="quiz-feats">
             <li><span>📋</span><div><b>Selección múltiple</b><p>${m.quiz.length} preguntas, una respuesta correcta por pregunta.</p></div></li>
             <li><span>🔁</span><div><b>Intentos ilimitados</b><p>Podés rendirlo las veces que necesites.</p></div></li>
-            <li><span>🎯</span><div><b>Aprobación: ${PASS}%</b><p>Necesitás al menos ${PASS}% de respuestas correctas para completar el módulo.</p></div></li>
+            <li><span>🎯</span><div><b>Aprobación: ${QMIN}%</b><p>Necesitás al menos ${QMIN}% de respuestas correctas para completar el módulo.</p></div></li>
             <li><span>⏱️</span><div><b>Sin límite de tiempo</b><p>Tomate el tiempo que necesites para responder.</p></div></li>
           </ul>
-          ${m._quiz!==null?`<div class="quiz-prev">Último intento: <b>${m._quiz}%</b> ${m._quiz>=PASS?'· Aprobado ✓':'· No aprobado'}</div>`:''}
+          ${m._quiz!==null?`<div class="quiz-prev">Último intento: <b>${m._quiz}%</b> ${m._quiz>=QMIN?'· Aprobado ✓':'· No aprobado'}</div>`:''}
           <button class="btn" style="max-width:280px" onclick="startQuiz()">Comenzar cuestionario →</button>
         </div>
       </div>`;
@@ -1787,7 +1789,7 @@ function renderQuiz(){
         <div class="quiz-hero" style="background:${c.color}">
           <div class="qh-eyebrow">${c.title}</div>
           <h1>${m.t}</h1>
-          <p style="color:rgba(255,255,255,.82);font-size:14px;margin-top:8px">${m.quiz.length} preguntas · aprobás con ${PASS}%</p>
+          <p style="color:rgba(255,255,255,.82);font-size:14px;margin-top:8px">${m.quiz.length} preguntas · aprobás con ${QMIN}%</p>
         </div>
         <div class="quiz-card">
           <div id="quizForm">${qs}</div>
@@ -1797,7 +1799,7 @@ function renderQuiz(){
     return;
   }
   // result
-  const pass=m._quiz>=PASS;
+  const pass=m._quiz>=QMIN;
   let review='';
   m.quiz.forEach((qq,qi)=>{
     const opts=qq.o.map((op,oi)=>{
@@ -1817,7 +1819,7 @@ function renderQuiz(){
       <div class="quiz-card">
         <div class="result-big ${pass?'ok':'no'}">
           <div class="rb-score">${m._quiz}%</div>
-          <div class="rb-msg">${pass?'¡Aprobaste el cuestionario! ✓':'Aún no alcanzaste el '+PASS+'% requerido'}</div>
+          <div class="rb-msg">${pass?'¡Aprobaste el cuestionario! ✓':'Aún no alcanzaste el '+QMIN+'% requerido'}</div>
         </div>
         <div class="block-label" style="margin-top:24px">📖 Revisión de respuestas</div>
         ${review}
