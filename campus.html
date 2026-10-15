@@ -1155,9 +1155,11 @@ function courseCert(c){
 // Un módulo está completo según lo que EXIGE el curso.
 function moduleComplete(m, c){
   const r = courseCert(c);
+  const tieneQuiz = m.quiz && m.quiz.length;
+  const tieneTarea = m.tarea && m.tarea.trim();
   if(r.videos && !m._seen.every(Boolean)) return false;
-  if(r.quiz && !(m._quiz!==null && m._quiz>=r.quizMin)) return false;
-  if(r.tarea && m._task!=='ok') return false;
+  if(r.quiz && tieneQuiz && !(m._quiz!==null && m._quiz>=r.quizMin)) return false;
+  if(r.tarea && tieneTarea && m._task!=='ok') return false;
   return true;
 }
 // progreso granular: cada tema visto, cada cuestionario aprobado y cada tarea
@@ -1532,7 +1534,7 @@ function renderDetail(){
     mods+=`<div class="acc${cdone?' done':''}" id="acc-${i}">
       <div class="acc-head" onclick="toggleAcc(${i})">
         <div class="acc-num">${cdone?'✓':i+1}</div>
-        <div class="acc-info"><b>${m.t}</b><span>${m.temas.length} temas · ${m.mats.length} materiales · tarea + cuestionario</span></div>
+        <div class="acc-info"><b>${m.t}</b><span>${[`${m.temas.length} temas`, m.mats.length?`${m.mats.length} materiales`:'', (m.tarea&&m.tarea.trim())?'tarea':'', (m.quiz&&m.quiz.length)?'cuestionario':''].filter(Boolean).join(' · ')}</span></div>
         <div class="acc-meta"><span class="acc-tag ${TIPO[m.tipo].cls}">${TIPO[m.tipo].label}</span><span class="chev">⌄</span></div>
       </div>
       <div class="acc-body" id="body-${i}"><div class="acc-body-inner">
@@ -1540,12 +1542,12 @@ function renderDetail(){
         <div class="block-label">🎬 Temas del módulo</div>
         ${temas}
         <div class="mats"><div class="block-label">📂 Materiales del módulo</div>${matsHtml}</div>
-        <div class="panel"><div class="panel-head"><h4>📝 Tarea del módulo</h4><span class="pill ${tcls}">${tlabel}</span></div>
-          <p>${m.tarea}</p>${taskActions}</div>
-        <div class="panel"><div class="panel-head"><h4>❓ Cuestionario de evaluación</h4>
+        ${(m.tarea && m.tarea.trim()) ? `<div class="panel"><div class="panel-head"><h4>📝 Tarea del módulo</h4><span class="pill ${tcls}">${tlabel}</span></div>
+          <p>${m.tarea}</p>${taskActions}</div>` : ''}
+        ${(m.quiz && m.quiz.length) ? `<div class="panel"><div class="panel-head"><h4>❓ Cuestionario de evaluación</h4>
           <span class="pill ${quizDone?(quizPass?'pill-ok':'pill-no'):'pill-pend'}">${quizDone?m._quiz+'%':'Sin rendir'}</span></div>
           <p>Cuestionario de selección múltiple. Intentos ilimitados; se aprueba con un mínimo de ${QMIN}%.</p>
-          ${quizPanel}</div>
+          ${quizPanel}</div>` : ''}
         ${qPanel}
         <div class="mod-status">
           <span class="mini-pill ${m._seen.every(Boolean)?'pill-ok':'pill-pend'}">Temas ${m._seen.filter(Boolean).length}/${m._seen.length}</span>
@@ -1558,8 +1560,8 @@ function renderDetail(){
   // certification checklist (según requisitos del curso)
   const CREQ = courseCert(c);
   const allMods=c.modules.every(m=>m._seen.every(Boolean));
-  const allQuiz=c.modules.every(m=>m._quiz!==null&&m._quiz>=CREQ.quizMin);
-  const allTask=c.modules.every(m=>m._task==='ok');
+  const allQuiz=c.modules.every(m=>!(m.quiz&&m.quiz.length) || (m._quiz!==null&&m._quiz>=CREQ.quizMin));
+  const allTask=c.modules.every(m=>!(m.tarea&&m.tarea.trim()) || m._task==='ok');
   const ready=canCertify(c);
 
   d.innerHTML=`<button class="back" onclick="goDash()">← Volver a mis capacitaciones</button>
