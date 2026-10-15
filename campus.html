@@ -1141,7 +1141,25 @@ function initState(){
 initState();
 
 /* ---------- helpers ---------- */
-const moduleComplete = m => m._seen.every(Boolean) && m._quiz!==null && m._quiz>=PASS && m._task==='ok';
+// Requisitos de certificación por curso (con defaults = comportamiento clásico).
+// cert = { videos:bool, quiz:bool, quizMin:int, tarea:bool }
+function courseCert(c){
+  const d = (c && c.cert) ? c.cert : {};
+  return {
+    videos: d.videos !== false,                 // por defecto exige videos
+    quiz:   d.quiz   !== false,                 // por defecto exige cuestionarios
+    quizMin: (typeof d.quizMin==='number' && d.quizMin>0) ? d.quizMin : PASS,
+    tarea:  d.tarea  !== false                  // por defecto exige tareas
+  };
+}
+// Un módulo está completo según lo que EXIGE el curso.
+function moduleComplete(m, c){
+  const r = courseCert(c);
+  if(r.videos && !m._seen.every(Boolean)) return false;
+  if(r.quiz && !(m._quiz!==null && m._quiz>=r.quizMin)) return false;
+  if(r.tarea && m._task!=='ok') return false;
+  return true;
+}
 // progreso granular: cada tema visto, cada cuestionario aprobado y cada tarea
 // aprobada cuentan como una unidad del total del curso. Sube con cada avance.
 
@@ -1186,17 +1204,16 @@ function adminProgressPct(prog, course){
 }
 
 const courseProgress = c => {
+  const r = courseCert(c);
   let total=0, done=0;
   c.modules.forEach(m=>{
-    const nTemas=m._seen.length;
-    total += nTemas + 2;                     // temas + cuestionario + tarea
-    done  += m._seen.filter(Boolean).length; // temas vistos
-    if(m._quiz!==null && m._quiz>=PASS) done++;   // cuestionario aprobado
-    if(m._task==='ok') done++;                    // tarea aprobada
+    if(r.videos){ total += m._seen.length; done += m._seen.filter(Boolean).length; }
+    if(r.quiz){ total += 1; if(m._quiz!==null && m._quiz>=r.quizMin) done++; }
+    if(r.tarea){ total += 1; if(m._task==='ok') done++; }
   });
-  return total ? Math.round(done/total*100) : 0;
+  return total ? Math.round(done/total*100) : 100;
 };
-const canCertify = c => c.modules.every(moduleComplete);
+const canCertify = c => c.modules.every(m=>moduleComplete(m,c));
 
 /* ---------- instructores ---------- */
 const INSTRUCTORS = [
@@ -1354,7 +1371,7 @@ async function renderGrid(){
   } else {
     active.forEach((c,idx)=>{
       const soon = c.estado==='proximamente';
-      const done=c.modules.filter(moduleComplete).length, p=courseProgress(c);
+      const done=c.modules.filter(m=>moduleComplete(m,c)).length, p=courseProgress(c);
       const card=document.createElement('div');card.className='course-card'+(soon?' soon':'');
       card.style.animationDelay=(idx*0.08)+'s';
       card.onclick=()=> soon ? alert('Esta capacitación estará disponible próximamente.') : openCourse(c.id);
@@ -1431,7 +1448,7 @@ const TIPO={teoria:{cls:'tag-teoria',label:'Teoría'},practica:{cls:'tag-practic
 const TASKPILL={pend:['pill-pend','Pendiente'],rev:['pill-rev','En revisión'],ok:['pill-ok','Aprobada'],no:['pill-no','Rechazada']};
 
 function renderDetail(){
-  const c=curCourse, p=courseProgress(c), done=c.modules.filter(moduleComplete).length;
+  const c=curCourse, p=courseProgress(c), done=c.modules.filter(m=>moduleComplete(m,c)).length;
   show('detail');
   const d=document.getElementById('detail');
 
@@ -1494,7 +1511,7 @@ function renderDetail(){
       quizPanel=`<button class="act-btn" onclick="openQuiz(${i})">Acceder al cuestionario →</button>`;
     }
 
-    const cdone=moduleComplete(m);
+    const cdone=moduleComplete(m,c);
     // panel de preguntas del alumno para este módulo
     const myQs = (m._questions||[]);
     const qThread = myQs.length ? myQs.map(q=>`
@@ -1537,9 +1554,10 @@ function renderDetail(){
       </div></div></div>`;
   });
 
-  // certification checklist
+  // certification checklist (según requisitos del curso)
+  const CREQ = courseCert(c);
   const allMods=c.modules.every(m=>m._seen.every(Boolean));
-  const allQuiz=c.modules.every(m=>m._quiz!==null&&m._quiz>=PASS);
+  const allQuiz=c.modules.every(m=>m._quiz!==null&&m._quiz>=CREQ.quizMin);
   const allTask=c.modules.every(m=>m._task==='ok');
   const ready=canCertify(c);
 
@@ -1566,9 +1584,9 @@ function renderDetail(){
           <h4>Certificación</h4>
           <p>Habilitá tu certificado completando todos los requisitos de la capacitación.</p>
           <ul class="cert-checklist">
-            <li class="${allMods?'met':''}">Todos los temas vistos</li>
-            <li class="${allQuiz?'met':''}">Cuestionarios aprobados (≥${PASS}%)</li>
-            <li class="${allTask?'met':''}">Tareas entregadas y aprobadas</li>
+            ${CREQ.videos?`<li class="${allMods?'met':''}">Todos los temas vistos</li>`:''}
+            ${CREQ.quiz?`<li class="${allQuiz?'met':''}">Cuestionarios aprobados (≥${CREQ.quizMin}%)</li>`:''}
+            ${CREQ.tarea?`<li class="${allTask?'met':''}">Tareas entregadas y aprobadas</li>`:''}
           </ul>
           <button class="cert-btn" ${ready?'':'disabled'} onclick="getCertification()">
             ${ready?'Obtener certificación':'Completá los requisitos'}</button>
@@ -1621,7 +1639,7 @@ function renderDetail(){
     </div>
   </footer>`;
 
-  const firstOpen=c.modules.findIndex(m=>!moduleComplete(m));
+  const firstOpen=c.modules.findIndex(m=>!moduleComplete(m,c));
   openAcc(firstOpen<0?0:firstOpen);
 }
 
@@ -2682,6 +2700,7 @@ function openCourseEditor(courseId){
   const c = courseId ? COURSES.find(x=>x.id===courseId) : null;
   const isNew = !c;
   const incluyeTxt = c && c.incluye ? c.incluye.join('\n') : 'Acceso de por vida al contenido\nMateriales descargables\nCertificado al finalizar';
+  const CERT = courseCert(c);  // requisitos de certificación (con defaults)
   document.getElementById('courseBody').innerHTML=`
     <h2 style="font-size:21px;margin-bottom:4px">${isNew?'Nueva capacitación':'Editar datos · '+c.title}</h2>
     <p style="color:var(--muted);font-size:13.5px;margin-bottom:18px">${isNew?'Creá la capacitación. Después le agregás módulos y temas desde «Contenido».':'Editá los datos generales. El contenido (módulos y temas) se edita aparte.'}</p>
@@ -2725,6 +2744,19 @@ function openCourseEditor(courseId){
       <label>Qué incluye (uno por línea)</label>
       <textarea id="ce-incluye" style="min-height:90px">${escHtml(incluyeTxt)}</textarea>
     </div>
+    <div class="ce-field">
+      <label>Requisitos para habilitar la certificación</label>
+      <div style="display:flex;flex-direction:column;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--soft)">
+        <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:500;margin:0">
+          <input type="checkbox" id="ce-cert-videos" ${CERT.videos?'checked':''} style="width:auto"> Ver el 100% de los videos</label>
+        <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:500;margin:0">
+          <input type="checkbox" id="ce-cert-quiz" ${CERT.quiz?'checked':''} style="width:auto"> Aprobar los cuestionarios
+          <span style="margin-left:auto;display:flex;align-items:center;gap:6px">mínimo <input type="number" id="ce-cert-quizmin" value="${CERT.quizMin}" min="1" max="100" style="width:64px;padding:6px 8px;margin:0"> %</span></label>
+        <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:500;margin:0">
+          <input type="checkbox" id="ce-cert-tarea" ${CERT.tarea?'checked':''} style="width:auto"> Entregar y aprobar las tareas</label>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin:6px 0 0">Definí qué debe cumplir el alumno para obtener el certificado de esta capacitación.</p>
+    </div>
     <p id="ce-msg" style="font-size:12.5px;color:var(--red);min-height:16px;margin-top:4px"></p>
     <div style="display:flex;gap:10px;margin-top:6px">
       <button class="act-btn" onclick="saveCourseEditor()">${isNew?'Crear capacitación':'Guardar cambios'}</button>
@@ -2748,6 +2780,12 @@ async function saveCourseEditor(){
   const color=document.getElementById('ce-color').value;
   const estado=document.getElementById('ce-estado').value;
   const incluye=(document.getElementById('ce-incluye').value||'').split('\n').map(x=>x.trim()).filter(Boolean);
+  const cert = {
+    videos: document.getElementById('ce-cert-videos').checked,
+    quiz:   document.getElementById('ce-cert-quiz').checked,
+    quizMin: Math.min(100, Math.max(1, parseInt(document.getElementById('ce-cert-quizmin').value)||80)),
+    tarea:  document.getElementById('ce-cert-tarea').checked
+  };
 
   if(!id){ msg.textContent='Falta el identificador.'; return; }
   if(!/^[a-z0-9-]+$/.test(id)){ msg.textContent='El identificador solo puede tener letras minúsculas, números y guiones.'; return; }
@@ -2766,7 +2804,7 @@ async function saveCourseEditor(){
   const course = {
     id, cat, title, desc, hours, img, color, estado,
     glyph: existing && existing.glyph ? existing.glyph : '',
-    incluye,
+    incluye, cert,
     modules: mods,
     orden: existing && typeof existing.orden==='number' ? existing.orden : COURSES.length
   };
